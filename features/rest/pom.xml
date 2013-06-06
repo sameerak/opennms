@@ -20,6 +20,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <modules>
+    <module>demo</module>
     <module>core</module>
     <module>addon</module>
   </modules>
