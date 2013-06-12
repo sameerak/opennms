@@ -19,7 +19,9 @@ public class OnmsGeolocation implements Serializable {
     private String m_city;
     private String m_state;
     private String m_zip;
-    private String m_coordinates;
+    private String m_country;
+    private Float m_longitude;
+    private Float m_latitude;
 
     /**
      *--# address1         : Address of geographical location of asset, line 1.
@@ -115,14 +117,50 @@ public class OnmsGeolocation implements Serializable {
     public void setZip(String zip) {
         m_zip = zip;
     }
-    
-    @Column(name="geolocation", length=32)
-    public String getCoordinates() {
-        return m_coordinates;
+
+    /**
+     *--# country              : The country where this asset resides.
+     *
+     * @return a {@link java.lang.String} object.
+     */
+    @Column(name="country", length=64)
+    public String getCountry() {
+        return m_country;
     }
 
-    public void setCoordinates(final String coordinates) {
-        m_coordinates = coordinates;
+    /**
+     * <p>setCountry</p>
+     *
+     * @param country a {@link java.lang.String} object.
+     */
+    public void setCountry(String country) {
+        m_country = country;
+    }
+
+    /**
+     * The longitude coordinate of this node.
+     * @return
+     */
+    @Column(name="longitude")
+    public Float getLongitude() {
+        return m_longitude;
+    }
+
+    public void setLongitude(final Float longitude) {
+        m_longitude = longitude;
+    }
+
+    /**
+     * The latitude coordinate of this node.
+     * @return
+     */
+    @Column(name="latitude")
+    public Float getLatitude() {
+        return m_latitude;
+    }
+
+    public void setLatitude(final Float latitude) {
+        m_latitude = latitude;
     }
 
     @Override
@@ -140,9 +178,26 @@ public class OnmsGeolocation implements Serializable {
             }
         }
 
-        if (sb.length() > 0 && this.getCity() != null) sb.append(", ").append(this.getCity());
-        if (sb.length() > 0 && this.getState() != null) sb.append(", ").append(this.getState());
-        if (sb.length() > 0 && this.getZip() != null) sb.append(" ").append(this.getZip());
+        if (this.getCity() != null) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(this.getCity());
+        }
+        if (this.getState() != null) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(this.getState());
+        }
+        if (this.getZip() != null) {
+            if (this.getState() != null) {
+                sb.append(" ");
+            } else if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(this.getZip());
+        }
+        if (this.getCountry() != null) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(this.getCountry());
+        }
 
         return sb.toString();
     }

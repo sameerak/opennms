@@ -28,18 +28,31 @@
 
 package org.opennms.netmgt.model;
 
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.PropertyAccessorFactory;
-import org.springframework.core.style.ToStringCreator;
+import java.beans.PropertyDescriptor;
+import java.io.Serializable;
+import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import java.beans.PropertyDescriptor;
-import java.io.Serializable;
-import java.util.Date;
+
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.core.style.ToStringCreator;
 
 /**
  * Represents the asset information for a node.
@@ -1553,7 +1566,8 @@ public class OnmsAssetRecord implements Serializable {
 
     @Deprecated
     public void setAddress1(final String address1) {
-        m_geolocation.setAddress1(address1);
+        if (m_geolocation != null)
+            m_geolocation.setAddress1(address1);
     }
 
     /**
@@ -1568,7 +1582,8 @@ public class OnmsAssetRecord implements Serializable {
 
     @Deprecated
     public void setAddress2(final String address2) {
-        m_geolocation.setAddress2(address2);
+        if (m_geolocation != null)
+            m_geolocation.setAddress2(address2);
     }
 
     /**
@@ -1583,7 +1598,8 @@ public class OnmsAssetRecord implements Serializable {
 
     @Deprecated
     public void setCity(final String city) {
-        m_geolocation.setCity(city);
+        if (m_geolocation != null)
+            m_geolocation.setCity(city);
     }
 
     /**
@@ -1598,7 +1614,8 @@ public class OnmsAssetRecord implements Serializable {
 
     @Deprecated
     public void setState(final String state) {
-        m_geolocation.setState(state);
+        if (m_geolocation != null)
+            m_geolocation.setState(state);
     }
 
     /**
@@ -1613,7 +1630,8 @@ public class OnmsAssetRecord implements Serializable {
 
     @Deprecated
     public void setZip(final String zip) {
-        m_geolocation.setZip(zip);
+        if (m_geolocation != null)
+            m_geolocation.setZip(zip);
     }
 
     /**
@@ -1622,13 +1640,46 @@ public class OnmsAssetRecord implements Serializable {
     @Transient
     @Deprecated
     @XmlElement
-    public String getCoordinates() {
-        return m_geolocation == null ? null : m_geolocation.getCoordinates();
+    public String getCountry() {
+        return m_geolocation == null ? null : m_geolocation.getCountry();
     }
 
     @Deprecated
-    public void setCoordinates(final String coordinates) {
-        m_geolocation.setCoordinates(coordinates);
+    public void setCountry(final String country) {
+        if (m_geolocation != null)
+            m_geolocation.setCountry(country);
+    }
+
+    /**
+     * PROXY METHOD: do not delete until {@link OnmsGeolocation} is truly a separate table, or projection mapping will fail.
+     */
+    @Transient
+    @Deprecated
+    @XmlElement
+    public Float getLongitude() {
+        return m_geolocation == null ? null : m_geolocation.getLongitude();
+    }
+
+    @Deprecated
+    public void setLongitude(final Float longitude) {
+        if (m_geolocation != null)
+            m_geolocation.setLongitude(longitude);
+    }
+
+    /**
+     * PROXY METHOD: do not delete until {@link OnmsGeolocation} is truly a separate table, or projection mapping will fail.
+     */
+    @Transient
+    @Deprecated
+    @XmlElement
+    public Float getLatitude() {
+        return m_geolocation == null ? null : m_geolocation.getLatitude();
+    }
+
+    @Deprecated
+    public void setLatitude(final Float latitude) {
+        if (m_geolocation != null)
+            m_geolocation.setLatitude(latitude);
     }
 
     /**
@@ -1752,71 +1803,73 @@ public class OnmsAssetRecord implements Serializable {
     @Override
     public String toString() {
         return new ToStringCreator(this)
-                .append("category", getCategory())
-                .append("manufacturer", getManufacturer())
-                .append("vendor", getVendor())
-                .append("modelnumber", getModelNumber())
-                .append("serialnumber", getSerialNumber())
-                .append("description", getDescription())
-                .append("circuitid", getCircuitId())
-                .append("assetnumber", getAssetNumber())
-                .append("operatingsystem", getOperatingSystem())
-                .append("rack", getRack())
-                .append("slot", getSlot())
-                .append("port", getPort())
-                .append("region", getRegion())
-                .append("division", getDivision())
-                .append("department", getDepartment())
-                .append("address1", m_geolocation == null ? null : m_geolocation.getAddress1())
-                .append("address2", m_geolocation == null ? null : m_geolocation.getAddress2())
-                .append("city", m_geolocation == null ? null : m_geolocation.getCity())
-                .append("state", m_geolocation == null ? null : m_geolocation.getState())
-                .append("zip", m_geolocation == null ? null : m_geolocation.getZip())
-                .append("geolocation", m_geolocation == null ? null : m_geolocation.getCoordinates())
-                .append("building", getBuilding())
-                .append("floor", getFloor())
-                .append("room", getRoom())
-                .append("username", getUsername())
-                .append("password", getPassword())
-                .append("enable", getEnable())
-                .append("autoenable", getAutoenable())
-                .append("connection", getConnection())
-                .append("vendorphone", getVendorPhone())
-                .append("vendorfax", getVendorFax())
-                .append("vendorassetnumber", getVendorAssetNumber())
-                .append("userlastmodified", getLastModifiedBy())
-                .append("lastmodifieddate", getLastModifiedDate())
-                .append("dateinstalled", getDateInstalled())
-                .append("lease", getLease())
-                .append("leaseexpires", getLeaseExpires())
-                .append("supportphone", getSupportPhone())
-                .append("maintcontract", getMaintcontract())
-                .append("maintcontractexpires", getMaintContractExpiration())
-                .append("displaycategory", getDisplayCategory())
-                .append("notifycategory", getNotifyCategory())
-                .append("pollercategory", getPollerCategory())
-                .append("thresholdcategory", getThresholdCategory())
-                .append("comment", getComment())
-                .append("cpu", getCpu())
-                .append("ram", getRam())
-                .append("storagectrl", getStoragectrl())
-                .append("hdd1", getHdd1())
-                .append("hdd2", getHdd2())
-                .append("hdd3", getHdd3())
-                .append("hdd4", getHdd4())
-                .append("hdd5", getHdd5())
-                .append("hdd6", getHdd6())
-                .append("numpowersupplies", getNumpowersupplies())
-                .append("inputpower", getInputpower())
-                .append("additionalhardware", getAdditionalhardware())
-                .append("admin", getAdmin())
-                .append("snmpcommunity", getSnmpcommunity())
-                .append("rackunitheight", getRackunitheight())
-                .append("vmwareManagedObjectId", getVmwareManagedObjectId())
-                .append("vmwareManagedEntityType", getVmwareManagedEntityType())
-                .append("vmwareManagementServer", getVmwareManagementServer())
-                .append("vmwareTopologyInfo", getVmwareTopologyInfo())
-                .append("vmwareState", getVmwareState()).toString();
+        .append("category", getCategory())
+        .append("manufacturer", getManufacturer())
+        .append("vendor", getVendor())
+        .append("modelnumber", getModelNumber())
+        .append("serialnumber", getSerialNumber())
+        .append("description", getDescription())
+        .append("circuitid", getCircuitId())
+        .append("assetnumber", getAssetNumber())
+        .append("operatingsystem", getOperatingSystem())
+        .append("rack", getRack())
+        .append("slot", getSlot())
+        .append("port", getPort())
+        .append("region", getRegion())
+        .append("division", getDivision())
+        .append("department", getDepartment())
+        .append("address1", m_geolocation == null ? null : m_geolocation.getAddress1())
+        .append("address2", m_geolocation == null ? null : m_geolocation.getAddress2())
+        .append("city", m_geolocation == null ? null : m_geolocation.getCity())
+        .append("state", m_geolocation == null ? null : m_geolocation.getState())
+        .append("zip", m_geolocation == null ? null : m_geolocation.getZip())
+        .append("country", m_geolocation == null ? null : m_geolocation.getCountry())
+        .append("longitude", m_geolocation == null ? null : m_geolocation.getLongitude())
+        .append("latitude", m_geolocation == null ? null : m_geolocation.getLatitude())
+        .append("building", getBuilding())
+        .append("floor", getFloor())
+        .append("room", getRoom())
+        .append("username", getUsername())
+        .append("password", getPassword())
+        .append("enable", getEnable())
+        .append("autoenable", getAutoenable())
+        .append("connection", getConnection())
+        .append("vendorphone", getVendorPhone())
+        .append("vendorfax", getVendorFax())
+        .append("vendorassetnumber", getVendorAssetNumber())
+        .append("userlastmodified", getLastModifiedBy())
+        .append("lastmodifieddate", getLastModifiedDate())
+        .append("dateinstalled", getDateInstalled())
+        .append("lease", getLease())
+        .append("leaseexpires", getLeaseExpires())
+        .append("supportphone", getSupportPhone())
+        .append("maintcontract", getMaintcontract())
+        .append("maintcontractexpires", getMaintContractExpiration())
+        .append("displaycategory", getDisplayCategory())
+        .append("notifycategory", getNotifyCategory())
+        .append("pollercategory", getPollerCategory())
+        .append("thresholdcategory", getThresholdCategory())
+        .append("comment", getComment())
+        .append("cpu", getCpu())
+        .append("ram", getRam())
+        .append("storagectrl", getStoragectrl())
+        .append("hdd1", getHdd1())
+        .append("hdd2", getHdd2())
+        .append("hdd3", getHdd3())
+        .append("hdd4", getHdd4())
+        .append("hdd5", getHdd5())
+        .append("hdd6", getHdd6())
+        .append("numpowersupplies", getNumpowersupplies())
+        .append("inputpower", getInputpower())
+        .append("additionalhardware", getAdditionalhardware())
+        .append("admin", getAdmin())
+        .append("snmpcommunity", getSnmpcommunity())
+        .append("rackunitheight", getRackunitheight())
+        .append("vmwareManagedObjectId", getVmwareManagedObjectId())
+        .append("vmwareManagedEntityType", getVmwareManagedEntityType())
+        .append("vmwareManagementServer", getVmwareManagementServer())
+        .append("vmwareTopologyInfo", getVmwareTopologyInfo())
+        .append("vmwareState", getVmwareState()).toString();
     }
 
     /**

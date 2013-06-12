@@ -53,6 +53,22 @@ public interface AssetPageConstants extends com.google.gwt.i18n.client.Constants
     @Key("address1Help")
     String address1Help();
 
+    @DefaultStringValue("Longitude")
+    @Key("longitude")
+    String longitude();
+
+    @DefaultStringValue("Geo Longitude")
+    @Key("longitudeHelp")
+    String longitudeHelp();
+
+    @DefaultStringValue("Latitude")
+    @Key("latitude")
+    String latitude();
+
+    @DefaultStringValue("Geo Latitude")
+    @Key("latitudeHelp")
+    String latitudeHelp();
+
     @DefaultStringValue("Address 2")
     @Key("address2")
     String address2();
@@ -703,6 +719,14 @@ public interface AssetPageConstants extends com.google.gwt.i18n.client.Constants
     @DefaultStringValue("Postal code (ZIP code)")
     @Key("zipHelp")
     String zipHelp();
+
+    @DefaultStringValue("Country")
+    @Key("country")
+    String country();
+
+    @DefaultStringValue("Country")
+    @Key("countryHelp")
+    String countryHelp();
 
     /* VMware asset fields */
     @DefaultStringValue("VMware")

@@ -58,13 +58,19 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
     Element m_marquee;
     
     @UiField
+    Element m_marginContainer;
+    
+    @UiField
     HTMLPanel m_widgetContainer;
     
     TopologyViewRenderer m_topologyViewRenderer;
 
     private boolean m_isRefresh;
 
-    private int m_leftMargin = 60;
+
+    public int getLeftMargin() {
+        return LEFT_MARGIN;
+    }
 
     public TopologyViewImpl() {
         initWidget(uiBinder.createAndBindUi(this));
@@ -90,7 +96,11 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
     public SVGElement getSVGElement() {
         return m_svg.cast();
     }
-
+    
+    private SVGGElement getMarginContainer() {
+        return m_marginContainer.cast();
+    }
+    
     @Override
     public SVGGElement getSVGViewPort() {
         return m_svgViewPort.cast();
@@ -118,16 +128,15 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
 
     @Override
     public void repaintNow(GWTGraph graph) {
-        m_presenter.getViewRenderer().draw(graph, this);
+        m_presenter.getViewRenderer().draw(graph, this, graph.getBoundingBox());
     }
 
     @Override
     public void onBrowserEvent(final Event event) {
         super.onBrowserEvent(event);
-
         switch(DOM.eventGetType(event)) {
             case Event.ONCONTEXTMENU:
-                
+
                 EventTarget target = event.getEventTarget();
                 
                 if (target.equals( getSVGElement() )) {
@@ -137,9 +146,6 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
                 event.stopPropagation();
                 break;
                 
-            case Event.ONMOUSEDOWN:
-    
-                break;
     
             case Event.ONCLICK:
                 if(event.getEventTarget().equals(getSVGElement())) {
@@ -164,8 +170,8 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
     }-*/;
 
     @Override
-    public void onGraphUpdated(GWTGraph graph) {
-            m_presenter.getViewRenderer().draw(graph, this);
+    public void onGraphUpdated(GWTGraph graph, GWTBoundingBox oldBBox) {
+            m_presenter.getViewRenderer().draw(graph, this, oldBBox);
     }
     
     @Override
@@ -175,8 +181,8 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
         int topMargin = iconMargin + 50;
         
         SVGElement svg = getSVGElement().cast();
-        final int svgWidth = svg.getParentElement().getOffsetWidth() - m_leftMargin; 
-        final int svgHeight = svg.getParentElement().getOffsetHeight();
+        final int svgWidth = getPhysicalWidth(); 
+        final int svgHeight = getPhysicalHeight();
         
         double scale = Math.min(svgWidth/((double)bounds.getWidth() + iconLeftMargin), svgHeight/((double)bounds.getHeight() + topMargin));
         scale = scale > 2 ? 2 : scale;
@@ -184,7 +190,7 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
         double translateY =  -bounds.getY();
         
         double calcY = (svgHeight - (bounds.getHeight()* scale))/2;
-        double calcX = (svgWidth - ((bounds.getWidth()) * scale))/2 + m_leftMargin;
+        double calcX = (svgWidth - ((bounds.getWidth()) * scale))/2 + getLeftMargin();
         SVGMatrix transform = svg.createSVGMatrix()
                 .translate(calcX, calcY)
                 .scale(scale)
@@ -224,7 +230,7 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
         SVGMatrix stateTF = g.getCTM().inverse();
         
         SVGPoint p = getSVGElement().createSVGPoint();
-        p.setX(getPhysicalWidth()/2 + m_leftMargin);
+        p.setX(getPhysicalWidth()/2 + getLeftMargin());
         p.setY(getPhysicalHeight()/2);
         
         SVGPoint center = p.matrixTransform(stateTF);
@@ -238,7 +244,7 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
         
         SVGPoint p = getSVGElement().createSVGPoint();
         
-        p.setX(clientX);
+        p.setX(clientX + getLeftMargin());
         p.setY(clientY);
         
         SVGPoint center = p.matrixTransform(stateTF);
@@ -248,7 +254,7 @@ public class TopologyViewImpl extends Composite implements TopologyView<Topology
 
     @Override
     public int getPhysicalWidth() {
-        return getSVGElement().getParentElement().getOffsetWidth() - m_leftMargin;
+        return getSVGElement().getParentElement().getOffsetWidth() - getLeftMargin();
     }
 
     @Override

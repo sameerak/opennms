@@ -48,10 +48,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The Class VmwareRequisitionUrlConnection
@@ -282,7 +279,7 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
          * the vcenter Ip address, the username and the password
          */
 
-        String vmState = "unknown";
+        String powerState = "unknown";
         StringBuffer vmwareTopologyInfo = new StringBuffer();
 
         // putting parents to topology information
@@ -304,7 +301,22 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
 
             HostSystem hostSystem = (HostSystem) managedEntity;
 
-            vmState = hostSystem.getSummary().getRuntime().getPowerState().toString();
+            if (hostSystem == null) {
+                logger.debug("hostSystem=null");
+            } else {
+                HostRuntimeInfo hostRuntimeInfo = hostSystem.getRuntime();
+
+                if (hostRuntimeInfo == null) {
+                    logger.debug("hostRuntimeInfo=null");
+                } else {
+                    HostSystemPowerState hostSystemPowerState = hostRuntimeInfo.getPowerState();
+                    if (hostSystemPowerState == null) {
+                        logger.debug("hostSystemPowerState=null");
+                    } else {
+                        powerState = hostSystemPowerState.toString();
+                    }
+                }
+            }
 
             try {
                 for (Datastore datastore : hostSystem.getDatastores()) {
@@ -339,7 +351,22 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
             if (managedEntity instanceof VirtualMachine) {
                 VirtualMachine virtualMachine = (VirtualMachine) managedEntity;
 
-                vmState = virtualMachine.getSummary().getRuntime().getPowerState().toString();
+                if (virtualMachine == null) {
+                    logger.debug("virtualMachine=null");
+                } else {
+                    VirtualMachineRuntimeInfo virtualMachineRuntimeInfo = virtualMachine.getRuntime();
+
+                    if (virtualMachineRuntimeInfo == null) {
+                        logger.debug("virtualMachineRuntimeInfo=null");
+                    } else {
+                        VirtualMachinePowerState virtualMachinePowerState = virtualMachineRuntimeInfo.getPowerState();
+                        if (virtualMachinePowerState == null) {
+                            logger.debug("virtualMachinePowerState=null");
+                        } else {
+                            powerState = virtualMachinePowerState.toString();
+                        }
+                    }
+                }
 
                 try {
                     for (Datastore datastore : virtualMachine.getDatastores()) {
@@ -398,7 +425,7 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
         RequisitionAsset requisitionAssetTopologyInfo = new RequisitionAsset("vmwareTopologyInfo", vmwareTopologyInfo.toString());
         requisitionNode.putAsset(requisitionAssetTopologyInfo);
 
-        RequisitionAsset requisitionAssetState = new RequisitionAsset("vmwareState", vmState);
+        RequisitionAsset requisitionAssetState = new RequisitionAsset("vmwareState", powerState);
         requisitionNode.putAsset(requisitionAssetState);
 
         requisitionNode.putCategory(new RequisitionCategory("VMware" + apiVersion));
@@ -484,7 +511,7 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
      * @return true for import, false otherwise
      */
     private boolean checkHostPowerState(HostSystem hostSystem) {
-        String powerState = hostSystem.getSummary().runtime.getPowerState().toString();
+        String powerState = hostSystem.getRuntime().getPowerState().toString();
 
         if ("poweredOn".equals(powerState) && m_importHostPoweredOn) {
             return true;
@@ -509,7 +536,7 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
      * @return true for import, false otherwise
      */
     private boolean checkVMPowerState(VirtualMachine virtualMachine) {
-        String powerState = virtualMachine.getSummary().runtime.getPowerState().toString();
+        String powerState = virtualMachine.getRuntime().getPowerState().toString();
 
         if ("poweredOn".equals(powerState) && m_importVMPoweredOn) {
             return true;
@@ -548,29 +575,7 @@ public class VmwareRequisitionUrlConnection extends GenericURLConnection {
                     logger.debug("Adding Host System '{}'", hostSystem.getName());
 
                     // iterate over all service console networks and add interface Ip addresses
-                    LinkedHashSet<String> ipAddresses = new LinkedHashSet<String>();
-
-                    HostNetworkSystem hostNetworkSystem = hostSystem.getHostNetworkSystem();
-
-                    if (hostNetworkSystem != null) {
-                        HostNetworkInfo hostNetworkInfo = hostNetworkSystem.getNetworkInfo();
-                        if (hostNetworkInfo != null) {
-
-                            HostVirtualNic[] hostVirtualNics = hostNetworkInfo.getConsoleVnic();
-                            if (hostVirtualNics != null) {
-                                for (HostVirtualNic hostVirtualNic : hostVirtualNics) {
-                                    ipAddresses.add(hostVirtualNic.getSpec().getIp().getIpAddress());
-                                }
-                            }
-
-                            hostVirtualNics = hostNetworkInfo.getVnic();
-                            if (hostVirtualNics != null) {
-                                for (HostVirtualNic hostVirtualNic : hostVirtualNics) {
-                                    ipAddresses.add(hostVirtualNic.getSpec().getIp().getIpAddress());
-                                }
-                            }
-                        }
-                    }
+                    TreeSet<String> ipAddresses = vmwareViJavaAccess.getHostSystemIpAddresses(hostSystem);
 
                     // create the new node...
                     RequisitionNode node = createRequisitionNode(ipAddresses, hostSystem, apiVersion);

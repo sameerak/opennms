@@ -43,6 +43,7 @@ import org.opennms.features.topology.app.internal.gwt.client.d3.D3Behavior;
 import org.opennms.features.topology.app.internal.gwt.client.d3.D3Drag;
 import org.opennms.features.topology.app.internal.gwt.client.d3.D3Events;
 import org.opennms.features.topology.app.internal.gwt.client.d3.D3Events.Handler;
+import org.opennms.features.topology.app.internal.gwt.client.d3.D3Transform;
 import org.opennms.features.topology.app.internal.gwt.client.d3.Func;
 import org.opennms.features.topology.app.internal.gwt.client.handler.DragHandlerManager;
 import org.opennms.features.topology.app.internal.gwt.client.handler.DragObject;
@@ -81,12 +82,11 @@ import com.vaadin.terminal.gwt.client.UIDL;
 public class VTopologyComponent extends Composite implements Paintable, SVGTopologyMap, TopologyView.Presenter<TopologyViewRenderer> {
     
     public interface TopologyViewRenderer{
-        void updateGraph(GWTGraph graph);
-        void draw(GWTGraph graph, TopologyView<TopologyViewRenderer> topologyView);
+        void draw(GWTGraph graph, TopologyView<TopologyViewRenderer> topologyView, GWTBoundingBox oldBBox);
     }
     
     public interface GraphUpdateListener{
-        void onGraphUpdated(GWTGraph graph);
+        void onGraphUpdated(GWTGraph graph, GWTBoundingBox oldBBox);
     }
     
 	public class SVGGraphDrawerNoTransition extends SVGGraphDrawer{
@@ -163,11 +163,6 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 			
 		}
 
-		public void updateGraph(GWTGraph graph) {
-			m_graph = graph;
-			draw(null, null);
-		}
-
 		public Handler<GWTVertex> getClickHandler() {
 			return m_clickHandler;
 		}
@@ -204,7 +199,7 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 			return m_dragBehavior;
 		}
 
-		public void draw(GWTGraph graph, final TopologyView<TopologyViewRenderer> topologyView) {
+		public void draw(GWTGraph graph, final TopologyView<TopologyViewRenderer> topologyView, GWTBoundingBox oldBBox) {
 			D3 edgeSelection = getEdgeSelection(graph, topologyView);
 
 			D3 vertexSelection = getVertexSelection(graph, topologyView);
@@ -247,24 +242,35 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
             //Scaling and Fit to Zoom transitions
 			SVGMatrix transform = topologyView.calculateNewTransform(graph.getBoundingBox());
             
-            D3.d3().select(topologyView.getSVGViewPort())
-            .transition().duration(1000)
-            .attr("transform", matrixTransform(transform) );
+			int width = topologyView.getPhysicalWidth();
+			int height = topologyView.getPhysicalHeight();
+			D3 selection = D3.d3().select(topologyView.getSVGViewPort());
+			D3Transform tform = D3.getTransform(selection.attr("transform"));
+			
+            JsArrayInteger p0 = (JsArrayInteger) JsArrayInteger.createArray();
+            int x = tform.getX();
+            int oldCenterX = (int) Math.round(((width/2 - x) / tform.getScaleX()));
+            int y = tform.getY();
+            int oldCenterY = (int) Math.round(((height/2 - y) / tform.getScaleY()));
+            p0.push(oldCenterX);
+            p0.push( oldCenterY );
+            p0.push((int) (width / tform.getScaleX()));
+            p0.push((int) (height / tform.getScaleY()));
+            
+            JsArrayInteger p1 = (JsArrayInteger) JsArrayInteger.createArray();
+            int newCenterX = graph.getBoundingBox().getX() + graph.getBoundingBox().getWidth()/2;
+            int newCenterY = graph.getBoundingBox().getY() + graph.getBoundingBox().getHeight()/2;
+            p1.push(newCenterX);
+            p1.push(newCenterY);
+            p1.push(graph.getBoundingBox().getWidth());
+            p1.push(graph.getBoundingBox().getHeight());
+            
+			D3.d3().zoomTransition(selection, width, height, p0, p1);
             
             D3.d3().selectAll(GWTEdge.SVG_EDGE_ELEMENT).style("stroke-width", GWTEdge.EDGE_WIDTH/transform.getA() + "px").transition().delay(750).duration(500).attr("opacity", "1").transition();
             
 		}
 		
-		private String matrixTransform(SVGMatrix matrix) {
-	        String m = "matrix(" + matrix.getA() +
-	                ", " + matrix.getB() +
-	                ", " + matrix.getC() + 
-	                ", " + matrix.getD() +
-	                ", " + matrix.getE() + 
-	                ", " + matrix.getF() + ")";
-	        return D3.getTransform( m ).toString();
-	    }
-
 		protected D3Behavior enterTransition() {
 			return fadeIn(500, 1000);
 		}
@@ -500,9 +506,9 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 		return new D3Events.Handler<GWTVertex>() {
 
 			public void call(final GWTVertex vertex, int index) {
-
 				showContextMenu(vertex.getId(), D3.getEvent().getClientX(), D3.getEvent().getClientY(), "vertex");
-				D3.eventPreventDefault();
+				D3.getEvent().preventDefault();
+                D3.getEvent().stopPropagation();
 			}
 		};
 	}
@@ -513,7 +519,8 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 			public void call(final GWTEdge edge, int index) {
 
 				showContextMenu(edge.getId(), D3.getEvent().getClientX(), D3.getEvent().getClientY(), "edge");
-				D3.eventPreventDefault();
+				D3.getEvent().preventDefault();
+                D3.getEvent().stopPropagation();
 
 			}
 		};
@@ -566,7 +573,6 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 
 			public void call(GWTVertex vertex, int index) {
 				NativeEvent event = D3.getEvent();
-				
 				SVGGElement vertexElement = event.getCurrentEventTarget().cast();
 				vertexElement.getParentElement().appendChild(vertexElement);
 				
@@ -600,32 +606,34 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 		return new Handler<GWTVertex>() {
 
 			public void call(GWTVertex vertex, int index) {
+			    if(D3.getEvent().getButton() != NativeEvent.BUTTON_RIGHT) {
 			    
-			    final List<String> values = new ArrayList<String>();
-			    final String[] vertexIds = m_dragObject.getDraggedVertices();
-			    D3.d3().selectAll(GWTVertex.VERTEX_CLASS_NAME).each(new Handler<GWTVertex>() {
-
-                    @Override
-                    public void call(GWTVertex vertex, int index) {
-                        for(String id : vertexIds) {
-                            if(vertex.getId().equals(id)) {
-                                values.add("id," + vertex.getId() + "|x," + vertex.getX() + "|y," + vertex.getY() + "|selected,"+ vertex.isSelected());
+    			    final List<String> values = new ArrayList<String>();
+    			    final String[] vertexIds = m_dragObject.getDraggedVertices();
+    			    D3.d3().selectAll(GWTVertex.VERTEX_CLASS_NAME).each(new Handler<GWTVertex>() {
+    
+                        @Override
+                        public void call(GWTVertex vertex, int index) {
+                            for(String id : vertexIds) {
+                                if(vertex.getId().equals(id)) {
+                                    values.add("id," + vertex.getId() + "|x," + vertex.getX() + "|y," + vertex.getY() + "|selected,"+ vertex.isSelected());
+                                }
                             }
                         }
-                    }
-                });
-			    
-			    if(m_dragObject.getDraggableElement().getAttribute("class").equals("vertex")) {
-			        //if(!D3.getEvent().getShiftKey()) {
-			        //    deselectAllItems(false);
-			        //}
+                    });
+    			    
+    			    if(m_dragObject.getDraggableElement().getAttribute("class").equals("vertex")) {
+    			        //if(!D3.getEvent().getShiftKey()) {
+    			        //    deselectAllItems(false);
+    			        //}
+    			    }
+    			    
+    			    m_client.updateVariable(getPaintableId(), "updateVertices", values.toArray(new String[] {}), false);
+    			    m_client.sendPendingVariableChanges();
+    			    
+    				D3.getEvent().preventDefault();
+    				D3.getEvent().stopPropagation();
 			    }
-			    
-			    m_client.updateVariable(getPaintableId(), "updateVertices", values.toArray(new String[] {}), false);
-			    m_client.sendPendingVariableChanges();
-			    
-				D3.getEvent().preventDefault();
-				D3.getEvent().stopPropagation();
 			}
 
 		};
@@ -669,7 +677,7 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 				}
 				
 				for( GraphUpdateListener listener : m_graphListenerList) {
-				    listener.onGraphUpdated(m_graph);
+				    listener.onGraphUpdated(m_graph, m_graph.getBoundingBox());
 				}
 				
 				D3.getEvent().preventDefault();
@@ -684,7 +692,6 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 		if(client.updateComponent(this, uidl, true)) {
 			return;
 		}
-		
 		GWTGraph graph = GWTGraph.create();
 		
 		m_client = client;
@@ -713,6 +720,10 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 
 				if (child.hasAttribute("label")) {
 					vertex.setLabel(child.getStringAttribute("label"));
+				}
+				
+				if(child.hasAttribute("status")) {
+				    vertex.setStatus(child.getStringAttribute("status"));
 				}
 
 				graph.addVertex(vertex);
@@ -768,8 +779,9 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
         int width = uidl.getIntAttribute("boundWidth");
         int height = uidl.getIntAttribute("boundHeight");
         
+        GWTBoundingBox oldBBox = m_graph.getBoundingBox();
         graph.setBoundingBox(GWTBoundingBox.create(x, y, width, height));
-		setGraph(graph);
+		setGraph(graph, oldBBox);
         
 		sendPhysicalDimensions();
 	}
@@ -832,8 +844,9 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 	 * Sets the graph, updates the ViewRenderer if need be and 
 	 * updates all graphUpdateListeners
 	 * @param graph
+     * @param oldBBox 
 	 */
-	private void setGraph(GWTGraph graph) {
+	private void setGraph(GWTGraph graph, GWTBoundingBox oldBBox) {
 		m_graph = graph;
         
 		//Set the ViewRenderer to the Animated one if it isn't already
@@ -841,7 +854,7 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
 		    setTopologyViewRenderer(m_graphDrawer);
 		}
         
-        updateGraphUpdateListeners();
+        updateGraphUpdateListeners(oldBBox);
 	}
 
     public ApplicationConnection getClient() {
@@ -925,9 +938,9 @@ public class VTopologyComponent extends Composite implements Paintable, SVGTopol
         m_graphListenerList.add(listener);
     }
     
-    private void updateGraphUpdateListeners() {
+    private void updateGraphUpdateListeners(GWTBoundingBox oldBBox) {
         for(GraphUpdateListener listener : m_graphListenerList) {
-            listener.onGraphUpdated( m_graph );
+            listener.onGraphUpdated( m_graph, oldBBox);
         }
     }
 

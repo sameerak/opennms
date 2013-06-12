@@ -38,13 +38,14 @@
 
 package org.opennms.netmgt.collectd;
 
+import com.vmware.vim25.HostRuntimeInfo;
+import com.vmware.vim25.HostSystemPowerState;
 import com.vmware.vim25.mo.HostSystem;
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.ValidationException;
 import org.opennms.core.db.DataSourceFactory;
 import org.opennms.core.utils.BeanUtils;
 import org.opennms.core.utils.ParameterMap;
-import org.opennms.protocols.vmware.VmwareViJavaAccess;
 import org.opennms.netmgt.collectd.vmware.cim.VmwareCimCollectionAttributeType;
 import org.opennms.netmgt.collectd.vmware.cim.VmwareCimCollectionResource;
 import org.opennms.netmgt.collectd.vmware.cim.VmwareCimCollectionSet;
@@ -59,6 +60,7 @@ import org.opennms.netmgt.dao.VmwareCimDatacollectionConfigDao;
 import org.opennms.netmgt.model.OnmsNode;
 import org.opennms.netmgt.model.RrdRepository;
 import org.opennms.netmgt.model.events.EventProxy;
+import org.opennms.protocols.vmware.VmwareViJavaAccess;
 import org.sblim.wbem.cim.CIMException;
 import org.sblim.wbem.cim.CIMObject;
 import org.slf4j.Logger;
@@ -290,7 +292,24 @@ public class VmwareCimCollector implements ServiceCollector {
 
         HostSystem hostSystem = vmwareViJavaAccess.getHostSystemByManagedObjectId(vmwareManagedObjectId);
 
-        String powerState = hostSystem.getSummary().runtime.getPowerState().toString();
+        String powerState = null;
+
+        if (hostSystem == null) {
+            logger.debug("hostSystem=null");
+        } else {
+            HostRuntimeInfo hostRuntimeInfo = hostSystem.getRuntime();
+
+            if (hostRuntimeInfo == null) {
+                logger.debug("hostRuntimeInfo=null");
+            } else {
+                HostSystemPowerState hostSystemPowerState = hostRuntimeInfo.getPowerState();
+                if (hostSystemPowerState == null) {
+                    logger.debug("hostSystemPowerState=null");
+                } else {
+                    powerState = hostSystemPowerState.toString();
+                }
+            }
+        }
 
         logger.debug("The power state for host system '{}' is '{}'", vmwareManagedObjectId, powerState);
 
