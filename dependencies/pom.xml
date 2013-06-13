@@ -13,6 +13,8 @@
     <module>activemq</module>
     <module>activemq-web</module>
     <module>asterisk</module>
+    <module>camel</module>
+    <module>camel-test</module>
     <module>castor</module>
     <module>dbpool</module>
     <module>dnsjava</module>
@@ -23,6 +25,7 @@
     <module>jasper</module>
     <module>jasypt</module>
     <module>javamail</module>
+    <module>jaxb</module>
     <module>jcifs</module>
     <module>jdbc-pool</module>
     <module>jersey</module>

@@ -116,6 +116,7 @@ public class RTTicket implements Serializable {
 
     public void setRequestors(final List<String> requestors) {
         synchronized (m_requestors) {
+            if (m_requestors == requestors) return;
             m_requestors.clear();
             m_requestors.addAll(requestors);
         }
@@ -160,6 +161,7 @@ public class RTTicket implements Serializable {
         m_customFields.add(customField);
     }
 
+    @Override
     public String toString() {
         StringBuilder customFields = new StringBuilder();
         for (CustomField cf : m_customFields) {

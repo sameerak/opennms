@@ -141,6 +141,11 @@
       </plugin>
 -->
       <plugin>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>depends-maven-plugin</artifactId>
+        <version>1.2</version>
+      </plugin>
+      <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <version>2.3.7</version>
@@ -373,7 +378,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.1.1</version>
+        <version>2.3</version>
         <configuration>
           <archiveClasses>true</archiveClasses>
           <outputFileNameMapping>@{artifactId}@-@{baseVersion}@.@{extension}@</outputFileNameMapping>
@@ -501,10 +506,6 @@
    <plugins>
      <plugin>
        <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-source-plugin</artifactId>
-     </plugin>
-     <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
        <artifactId>maven-eclipse-plugin</artifactId>
        <configuration>
          <additionalConfig>
@@ -558,7 +559,7 @@
      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>3.1</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -605,7 +606,8 @@
             <runPingTests>${runPingTests}</runPingTests>
             <proxy.port>${proxy.port}</proxy.port>
           </systemPropertyVariables>
-          <forkMode>pertest</forkMode>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <argLine>-Xmx1024m</argLine>
           <includes>
             <include>**/*Test.java</include>
@@ -739,8 +741,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <!-- maven surefire version added here so it could be overridden -->
-    <maven.surefire.plugin.version>2.9</maven.surefire.plugin.version>
-    <maven.surefire.report.plugin.version>2.9</maven.surefire.report.plugin.version>
+    <maven.surefire.plugin.version>2.15</maven.surefire.plugin.version>
+    <maven.surefire.report.plugin.version>2.15</maven.surefire.report.plugin.version>
     <maven.eclipse.plugin.version>2.8</maven.eclipse.plugin.version>
     <maven.pax.plugin.version>1.5</maven.pax.plugin.version>
     <antlr.version>2.7.6</antlr.version>
@@ -824,6 +826,7 @@
 
     <!-- dependency versions -->
     <activemqVersion>5.6.0</activemqVersion>
+    <camelVersion>2.10.4</camelVersion>
     <commonsBeanutilsVersion>1.8.3</commonsBeanutilsVersion>
     <commonsCodecVersion>1.7</commonsCodecVersion>
     <commonsCollectionsVersion>3.2.1</commonsCollectionsVersion>
@@ -1400,6 +1403,19 @@
       </dependency>
       <dependency>
         <groupId>org.opennms.dependencies</groupId>
+        <artifactId>camel-dependencies</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.opennms.dependencies</groupId>
+        <artifactId>camel-test-dependencies</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.opennms.dependencies</groupId>
         <artifactId>karaf-dependencies</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
@@ -1443,6 +1459,12 @@
       <dependency>
         <groupId>org.opennms.dependencies</groupId>
         <artifactId>javamail-dependencies</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.opennms.dependencies</groupId>
+        <artifactId>jaxb-dependencies</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>
@@ -2244,16 +2266,12 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>javax.xml</groupId>
+            <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
           </exclusion>
           <exclusion>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>javax.xml</groupId>
-            <artifactId>jaxb-api</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -2686,8 +2704,8 @@
       </dependency>
       <dependency>
         <groupId>org.krupczak</groupId>
-        <artifactId>Xmp</artifactId>
-        <version>1.21</version>
+        <artifactId>xmp</artifactId>
+        <version>1.30r1</version>
       </dependency>
       <dependency>
         <groupId>xmlunit</groupId>

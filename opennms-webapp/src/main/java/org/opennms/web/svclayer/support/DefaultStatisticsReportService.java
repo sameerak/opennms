@@ -29,6 +29,7 @@
 package org.opennms.web.svclayer.support;
 
 import java.util.List;
+import java.util.Set;
 
 import org.opennms.core.utils.ThreadCategory;
 import org.opennms.netmgt.dao.ResourceDao;
@@ -59,11 +60,13 @@ public class DefaultStatisticsReportService implements StatisticsReportService, 
      *
      * @return a {@link java.util.List} object.
      */
+    @Override
     public List<StatisticsReport> getStatisticsReports() {
         return m_statisticsReportDao.findAll();
     }
 
     /** {@inheritDoc} */
+    @Override
     public StatisticsReportModel getReport(StatisticsReportCommand command, BindException errors) {
         StatisticsReportModel model = new StatisticsReportModel();
         model.setErrors(errors);
@@ -78,14 +81,15 @@ public class DefaultStatisticsReportService implements StatisticsReportService, 
         model.setReport(report);
         
         m_statisticsReportDao.initialize(report);
-        m_statisticsReportDao.initialize(report.getData());
+        final Set<StatisticsReportData> data = report.getData();
+        m_statisticsReportDao.initialize(data);
         
-        for (StatisticsReportData datum : report.getData()) {
+        for (StatisticsReportData reportDatum : data) {
             Datum d = new Datum();
-            d.setValue(datum.getValue());
-            OnmsResource resource = m_resourceDao.getResourceById(datum.getResourceId());
+            d.setValue(reportDatum.getValue());
+            OnmsResource resource = m_resourceDao.getResourceById(reportDatum.getResourceId());
             if (resource == null) {
-                ThreadCategory.getInstance(getClass()).warn("Could not find resource for statistics report: " + datum.getResourceId());
+                ThreadCategory.getInstance(getClass()).warn("Could not find resource for statistics report: " + reportDatum.getResourceId());
             } else {
                 d.setResource(resource);
             }

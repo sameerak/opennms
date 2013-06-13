@@ -109,6 +109,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      *
      * @return a {@link java.lang.String} object.
      */
+    @Override
     public String getName() {
         return m_name;
     }
@@ -166,6 +167,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      *
      * @return a {@link java.lang.String} object.
      */
+    @Override
     public String getCriticalServiceName() {
         return getPollerConfig().getCriticalService();
     }
@@ -178,6 +180,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      *
      * @return a boolean.
      */
+    @Override
     public boolean isNodeProcessingEnabled() {
         return getPollerConfig().isNodeOutageProcessingEnabled();
     }
@@ -190,6 +193,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      *
      * @return a boolean.
      */
+    @Override
     public boolean isPollingAllIfCritServiceUndefined() {
         return getPollerConfig().shouldPollAllIfNoCriticalServiceDefined();
     }
@@ -198,6 +202,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      * @see org.opennms.netmgt.poller.pollables.PollContext#sendEvent(org.opennms.netmgt.xml.event.Event)
      */
     /** {@inheritDoc} */
+    @Override
     public PollEvent sendEvent(Event event) {
         if (!m_listenerAdded) {
             getEventManager().addEventListener(this);
@@ -220,6 +225,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      * @see org.opennms.netmgt.poller.pollables.PollContext#createEvent(java.lang.String, int, java.net.InetAddress, java.lang.String, java.util.Date)
      */
     /** {@inheritDoc} */
+    @Override
     public Event createEvent(String uei, int nodeId, InetAddress address, String svcName, Date date, String reason) {
         ThreadCategory log = ThreadCategory.getInstance(this.getClass());
         
@@ -277,15 +283,23 @@ public class DefaultPollContext implements PollContext, EventListener {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void openOutage(final PollableService svc, final PollEvent svcLostEvent) {
         log().debug("openOutage: Opening outage for: "+svc+" with event:"+svcLostEvent);
         final int nodeId = svc.getNodeId();
         final String ipAddr = svc.getIpAddr();
         final String svcName = svc.getSvcName();
-        Runnable r = new Runnable() {
+        final Runnable r = new Runnable() {
+            @Override
             public void run() {
-                log().debug("run: Opening outage with query manager: "+svc+" with event:"+svcLostEvent);
-                getQueryManager().openOutage(getPollerConfig().getNextOutageIdSql(), nodeId, ipAddr, svcName, svcLostEvent.getEventId(), EventConstants.formatToString(svcLostEvent.getDate()));
+                if (log().isDebugEnabled()) log().debug("run: Opening outage with query manager: "+svc+" with event:"+svcLostEvent);
+
+                final int eventId = svcLostEvent.getEventId();
+                if (eventId > 0) {
+                    getQueryManager().openOutage(getPollerConfig().getNextOutageIdSql(), nodeId, ipAddr, svcName, eventId, EventConstants.formatToString(svcLostEvent.getDate()));
+                } else {
+                    log().warn("run: Failed to determine an eventId for service outage for: " + svc + " with event: " + svcLostEvent);
+                }
             }
 
         };
@@ -302,13 +316,20 @@ public class DefaultPollContext implements PollContext, EventListener {
      * @see org.opennms.netmgt.poller.pollables.PollContext#resolveOutage(org.opennms.netmgt.poller.pollables.PollableService, org.opennms.netmgt.xml.event.Event)
      */
     /** {@inheritDoc} */
-    public void resolveOutage(PollableService svc, final PollEvent svcRegainEvent) {
+    @Override
+    public void resolveOutage(final PollableService svc, final PollEvent svcRegainEvent) {
         final int nodeId = svc.getNodeId();
         final String ipAddr = svc.getIpAddr();
         final String svcName = svc.getSvcName();
-        Runnable r = new Runnable() {
+        final Runnable r = new Runnable() {
+            @Override
             public void run() {
-                getQueryManager().resolveOutage(nodeId, ipAddr, svcName, svcRegainEvent.getEventId(), EventConstants.formatToString(svcRegainEvent.getDate()));
+                final int eventId = svcRegainEvent.getEventId();
+                if (eventId > 0) {
+                    getQueryManager().resolveOutage(nodeId, ipAddr, svcName, eventId, EventConstants.formatToString(svcRegainEvent.getDate()));
+                } else {
+                    log().warn("run: Failed to determine an eventId for service regained for: " + svc + " with event: " + svcRegainEvent);
+                }
             }
         };
         if (svcRegainEvent instanceof PendingPollEvent) {
@@ -320,6 +341,7 @@ public class DefaultPollContext implements PollContext, EventListener {
     }
     
     /** {@inheritDoc} */
+    @Override
     public void reparentOutages(String ipAddr, int oldNodeId, int newNodeId) {
         getQueryManager().reparentOutages(ipAddr, oldNodeId, newNodeId);
     }
@@ -332,6 +354,7 @@ public class DefaultPollContext implements PollContext, EventListener {
      *
      * @return a boolean.
      */
+    @Override
     public boolean isServiceUnresponsiveEnabled() {
         return getPollerConfig().isServiceUnresponsiveEnabled();
     }
@@ -340,11 +363,12 @@ public class DefaultPollContext implements PollContext, EventListener {
      * @see org.opennms.netmgt.eventd.EventListener#onEvent(org.opennms.netmgt.xml.event.Event)
      */
     /** {@inheritDoc} */
-    public void onEvent(Event e) {
+    @Override
+    public void onEvent(final Event e) {
         synchronized (m_pendingPollEvents) {
             log().debug("onEvent: Received event: "+e+" uei: "+e.getUei()+", dbid: "+e.getDbid());
-            for (Iterator<PendingPollEvent> it = m_pendingPollEvents .iterator(); it.hasNext();) {
-                PendingPollEvent pollEvent = it.next();
+            for (final Iterator<PendingPollEvent> it = m_pendingPollEvents .iterator(); it.hasNext();) {
+                final PendingPollEvent pollEvent = it.next();
                 log().debug("onEvent: comparing events to poll event: "+pollEvent);
                 if (e.equals(pollEvent.getEvent())) {
                     log().debug("onEvent: completing pollevent: "+pollEvent);

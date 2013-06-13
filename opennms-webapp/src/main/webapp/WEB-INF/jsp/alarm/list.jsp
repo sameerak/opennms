@@ -298,7 +298,7 @@
 
 
 
-			<th width="8%">
+			<th width="7%">
               <%=this.makeSortLink( parms, SortStyle.ID,        SortStyle.REVERSE_ID,        "id",        "ID" )%>
               <br />
               <%=this.makeSortLink( parms, SortStyle.SEVERITY,  SortStyle.REVERSE_SEVERITY,  "severity",  "Severity"  )%>
@@ -315,7 +315,7 @@
 			<th width="3%">
               <%=this.makeSortLink( parms, SortStyle.COUNT,  SortStyle.REVERSE_COUNT,  "count",  "Count"  )%>
             </th>
-			<th width="20%">
+			<th width="13%">
               <%=this.makeSortLink( parms, SortStyle.LASTEVENTTIME,  SortStyle.REVERSE_LASTEVENTTIME,  "lasteventtime",  "Last Event Time"  )%>
               <c:if test="${param.display == 'long'}">
               <br />
@@ -326,13 +326,12 @@
               <% } %>
               </c:if>
             </th>
-			<th width="48%">Log Msg</th>
+			<th width="56%">Log Msg</th>
 		</tr>
 	</thead>
 
       <% for( int i=0; i < alarms.length; i++ ) { 
-      	OnmsAlarm alarm = alarms[i];
-      	pageContext.setAttribute("alarm", alarm);
+      	pageContext.setAttribute("alarm", alarms[i]);
       %> 
 
         <tr class="<%=alarms[i].getSeverity().getLabel()%>">
@@ -389,7 +388,7 @@
           </c:if>
           </td>
           <td class="divider">
-	    <% if(alarms[i].getNodeId() != 0 && alarms[i].getNodeLabel()!= null ) { %>
+	    <% if(alarms[i].getNodeId() != null && alarms[i].getNodeLabel()!= null ) { %>
               <% Filter nodeFilter = new NodeFilter(alarms[i].getNodeId(), getServletContext()); %>             
               <% String[] labels = this.getNodeLabels( alarms[i].getNodeLabel() ); %>
               <a href="element/node.jsp?node=<%=alarms[i].getNodeId()%>" title="<%=labels[1]%>"><%=labels[0]%></a>
@@ -407,7 +406,7 @@
 		<br />
             <% if(alarms[i].getIpAddr() != null ) { %>
               <% Filter intfFilter = new InterfaceFilter(alarms[i].getIpAddr()); %>
-              <% if( alarms[i].getNodeId() != 0 ) { %>
+              <% if( alarms[i].getNodeId() != null ) { %>
                 <c:url var="interfaceLink" value="element/interface.jsp">
                   <c:param name="node" value="<%=String.valueOf(alarms[i].getNodeId())%>"/>
                   <c:param name="intf" value="<%=InetAddressUtils.str(alarms[i].getIpAddr())%>"/>
@@ -428,7 +427,7 @@
           <br />
             <% if(alarms[i].getServiceType() != null && !"".equals(alarms[i].getServiceType().getName())) { %>
               <% Filter serviceFilter = new ServiceFilter(alarms[i].getServiceType().getId()); %>
-              <% if( alarms[i].getNodeId() != 0 && alarms[i].getIpAddr() != null ) { %>
+              <% if( alarms[i].getNodeId() != null && alarms[i].getIpAddr() != null ) { %>
                 <c:url var="serviceLink" value="element/service.jsp">
                   <c:param name="node" value="<%=String.valueOf(alarms[i].getNodeId())%>"/>
                   <c:param name="intf" value="<%=InetAddressUtils.str(alarms[i].getIpAddr())%>"/>
@@ -471,7 +470,7 @@
             </nobr>
           <br />
               <% if ( parms.ackType == AcknowledgeType.ACKNOWLEDGED ) { %>
-			<nobr><%=alarm.getAckUser()%></nobr>          
+			<nobr><%=alarms[i].getAckUser()%></nobr>          
             <nobr>
               <a href="<%=this.makeLink( parms, new AcknowledgedByFilter(alarms[i].getAckUser()), true)%>"  class="filterLink" title="Only show alarms ack by this user">${addPositiveFilter}</a>            
               <a href="<%=this.makeLink( parms, new NegativeAcknowledgedByFilter(alarms[i].getAckUser()), true)%>" class="filterLink" title="Only show alarms ack by other users">${addNegativeFilter}</a>
@@ -480,7 +479,7 @@
           </c:if>
           </td>
           <td class="divider"><%=alarms[i].getLogMsg()%></td>
-       
+        </tr> 
       <% } /*end for*/%>
 
       </table>

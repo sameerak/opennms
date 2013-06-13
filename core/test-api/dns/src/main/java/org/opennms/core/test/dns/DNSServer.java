@@ -63,6 +63,7 @@ public class DNSServer {
             m_addr = addr;
         }
 
+        @Override
         public void run() {
             try {
                 m_socket = new ServerSocket(m_port, 128, m_addr);
@@ -71,6 +72,7 @@ public class DNSServer {
                     try {
                         final Socket s = m_socket.accept();
                         final Thread t = new Thread(new Runnable() {
+                            @Override
                             public void run() {
                                 try {
                                     try {
@@ -132,6 +134,7 @@ public class DNSServer {
             }
         }
         
+        @Override
         public void stop() {
             m_stopped = true;
             try {
@@ -154,6 +157,7 @@ public class DNSServer {
             m_addr = addr;
         }
 
+        @Override
         public void run() {
             DatagramSocket sock = null;
             try {
@@ -204,6 +208,7 @@ public class DNSServer {
             }
         }
 
+        @Override
         public void stop() {
             m_stopped = true;
             try {
@@ -340,6 +345,7 @@ public class DNSServer {
     }
 
     public void setPorts(final List<Integer> ports) {
+        if (m_ports == ports) return;
         m_ports.clear();
         m_ports.addAll(ports);
     }
@@ -349,6 +355,7 @@ public class DNSServer {
     }
     
     public void setAddresses(final List<InetAddress> addresses) {
+        if (m_addresses == addresses) return;
         m_addresses.clear();
         m_addresses.addAll(addresses);
     }
