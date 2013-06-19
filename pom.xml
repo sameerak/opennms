@@ -2463,7 +2463,7 @@
       <dependency>
         <groupId>com.sun.xml.bind</groupId>
         <artifactId>jaxb-impl</artifactId>
-        <version>99.99.99-use-opennms-jaxb</version>
+        <version>2.2.7</version><!-- changed from original value "99.99.99-use-opennms-jaxb" -->
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>

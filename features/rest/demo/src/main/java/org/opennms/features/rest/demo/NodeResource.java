@@ -5,8 +5,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.cxf.jaxrs.ext.search.SearchCondition;
+import org.apache.cxf.jaxrs.ext.search.SearchContext;
 import org.opennms.netmgt.dao.NodeDao;
 import org.opennms.netmgt.model.OnmsNode;
 
@@ -15,7 +19,9 @@ import org.opennms.netmgt.model.OnmsNode;
 public class NodeResource {
 
     private NodeDao nodeDao;
-
+    @Context
+    private SearchContext context;
+    
     /**
      * get a list of all the nodes present in the system
      * @return List<OnmsNode>
@@ -43,4 +49,19 @@ public class NodeResource {
     public void setNodeDao(NodeDao nodeDao) {
         this.nodeDao = nodeDao;
     }
+
+    @GET
+    @Path("/search")
+    public List<OnmsNode> searchNodes(@QueryParam("_s") String value) {
+        try {
+            SearchCondition<OnmsNode> sc = context.getCondition(OnmsNode.class);
+            // SearchCondition#isMet method can also be used to build a list of matching beans
+        } catch (Exception e) {
+            System.out.println(e.getMessage()); //for debugging purpose
+        }
+        
+        List<OnmsNode> found = nodeDao.findAll();
+        return found;
+    }
+    
 }
