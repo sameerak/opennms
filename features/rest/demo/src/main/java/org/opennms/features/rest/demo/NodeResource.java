@@ -50,18 +50,32 @@ public class NodeResource {
         this.nodeDao = nodeDao;
     }
 
+    /**
+     * sample using examples at http://cxf.apache.org/docs/jax-rs-search.html
+     * 
+     * This sample should return list of nodes matching the query specified by the FIQL
+     * sample URL = 
+     * "http://localhost:8980/opennms/rest2/nodes/search?_s=type!=D;labelSource==H" 
+     * 
+     * @return
+     */
     @GET
     @Path("/search")
-    public List<OnmsNode> searchNodes(@QueryParam("_s") String value) {
+    public List<OnmsNode> searchNodes() {
         try {
             SearchCondition<OnmsNode> sc = context.getCondition(OnmsNode.class);
             // SearchCondition#isMet method can also be used to build a list of matching beans
+            
+            List<OnmsNode> allNodes = nodeDao.findAll();
+            
+            // iterate over all the values in the allNodes map and return a collection of matching beans
+            List<OnmsNode> found = sc.findAll(allNodes);
+            return found;
+            
         } catch (Exception e) {
             System.out.println(e.getMessage()); //for debugging purpose
         }
-        
-        List<OnmsNode> found = nodeDao.findAll();
-        return found;
+        return null;
     }
     
 }
