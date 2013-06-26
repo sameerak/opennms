@@ -16,6 +16,8 @@ import org.opennms.core.criteria.Alias.JoinType;
 import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.core.criteria.restrictions.Restrictions;
 import org.opennms.netmgt.dao.NodeDao;
+import org.opennms.netmgt.dao.CategoryDao;
+import org.opennms.netmgt.model.OnmsCategory;
 import org.opennms.netmgt.model.OnmsNode;
 import org.opennms.netmgt.model.OnmsNodeList;
 
@@ -24,6 +26,7 @@ import org.opennms.netmgt.model.OnmsNodeList;
 public class NodeResource {
 
     private NodeDao nodeDao;
+    private CategoryDao categoryDao;
 
     /**
      * get a list of all the nodes present in the system
@@ -42,7 +45,8 @@ public class NodeResource {
     @GET
     @Path("{nodeId}")
     public OnmsNode getNode(@PathParam("nodeId") final String nodeId) {
-        return nodeDao.get(nodeId);
+        OnmsNode result = nodeDao.get(nodeId);
+        return result;
     }
 
     /**
@@ -53,6 +57,73 @@ public class NodeResource {
         this.nodeDao = nodeDao;
     }
     
+    /**
+     * method to initialize local variable categoryDao using blueprint
+     * @param categoryDao
+     */
+    public void setCategoryDao(CategoryDao categoryDao) {
+        this.categoryDao = categoryDao;
+    }
+    
+    /**
+     * method to get nodes belonging to several specified categories
+     * categories are specified as an array of strings
+     * sample URL
+     * "http://localhost:8980/opennms/rest2/nodes/categories?q=Unspecified&q=DeskTop"
+     * 
+     * @param categories
+     * @return
+     */
+    @GET
+    @Path("/categories")
+    public List<OnmsNode> getNodesByCategories(@QueryParam("q") List<String> categories){
+        if (categories == null){
+            //400 bad request
+            //OR
+            //return all available categories
+            System.out.println("NO categories");
+        }
+        if (categories != null){
+            try{
+                List<OnmsCategory> onmsCategories = new ArrayList<OnmsCategory>();
+                List<OnmsNode> result = nodeDao.findAllByCategoryList(onmsCategories);
+                return result;
+            }catch(Exception e){    //Added for verification purposes
+                System.out.println(e.getMessage());
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Method to retrieve all nodes belonging to a single category
+     * sample URL
+     * "http://localhost:8980/opennms/rest2/nodes/categories/Unspecified"
+     * 
+     * @param category
+     * @return
+     */
+    @GET
+    @Path("/categories/{category}")
+    public List<OnmsNode> getNodesByCategory(@PathParam("category") String category){
+        if (category == null){
+            //400 bad request
+            //OR
+            //return all available categories
+            System.out.println("NO category");
+        }
+        if (category != null){
+            try{
+                OnmsCategory onmsCategory = categoryDao.findByName(category);
+                List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
+                return result;
+            }catch(Exception e){    //Added for verification purposes
+                System.out.println(e.getMessage());
+            }
+        }
+        return null;
+    }
+
     /**
      * Testing the transmission of query parameters 
      * 

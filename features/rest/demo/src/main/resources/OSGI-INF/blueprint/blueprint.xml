@@ -15,9 +15,11 @@
       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
 ">
     <reference id="nodeDao" interface="org.opennms.netmgt.dao.NodeDao" />
+    <reference id="categoryDao" interface="org.opennms.netmgt.dao.CategoryDao" />
     
     <bean id="nodeResource" class="org.opennms.features.rest.demo.NodeResource">
-        <property name="nodeDao" ref="nodeDao" /> 
+        <property name="nodeDao" ref="nodeDao" />
+        <property name="categoryDao" ref="categoryDao" />
     </bean>
 
     <cxf:bus id="restBus">
