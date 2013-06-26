@@ -29,6 +29,9 @@
     <jaxrs:server id="restServer">
         <jaxrs:serviceBeans>
             <ref component-id="nodeResource" />
+            <map>
+				<entry key="type" value="org.opennms.netmgt.model.OnmsNode.m_type"/>
+			</map>
         </jaxrs:serviceBeans>
     </jaxrs:server>
   
