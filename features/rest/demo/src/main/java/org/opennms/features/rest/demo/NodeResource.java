@@ -69,7 +69,7 @@ public class NodeResource {
      * method to get nodes belonging to several specified categories
      * categories are specified as an array of strings
      * sample URL
-     * "http://localhost:8980/opennms/rest2/nodes/categories?q=Unspecified&q=DeskTop"
+     * "http://localhost:8980/opennms/rest2/nodes/categories?q=Servers&q=Routers&q=Switches&q=Production&q=Test&q=Development"
      * 
      * @param categories
      * @return
@@ -84,8 +84,11 @@ public class NodeResource {
             System.out.println("NO categories");
         }
         if (categories != null){
-            try{
+            try{    //Added for verification purposes
                 List<OnmsCategory> onmsCategories = new ArrayList<OnmsCategory>();
+                for (String category : categories) {
+                    onmsCategories.add(categoryDao.findByName(category));
+                }
                 List<OnmsNode> result = nodeDao.findAllByCategoryList(onmsCategories);
                 return result;
             }catch(Exception e){    //Added for verification purposes
@@ -98,7 +101,7 @@ public class NodeResource {
     /**
      * Method to retrieve all nodes belonging to a single category
      * sample URL
-     * "http://localhost:8980/opennms/rest2/nodes/categories/Unspecified"
+     * "http://localhost:8980/opennms/rest2/nodes/categories/Servers"
      * 
      * @param category
      * @return
@@ -113,7 +116,7 @@ public class NodeResource {
             System.out.println("NO category");
         }
         if (category != null){
-            try{
+            try{    //Added for verification purposes
                 OnmsCategory onmsCategory = categoryDao.findByName(category);
                 List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
                 return result;
@@ -161,9 +164,17 @@ public class NodeResource {
 
         final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
             restrictions.add(Restrictions.ne("type", "D"));
-            crit.setRestrictions(restrictions);
-        
-        final OnmsNodeList coll = new OnmsNodeList(nodeDao.findMatching(crit));
+//            List<OnmsCategory> onmsCategory = categoryDao.findAll();
+//            restrictions.add(Restrictions.eq("categories", onmsCategory));
+//            crit.setRestrictions(restrictions);
+            
+            OnmsNodeList coll = null;
+            
+        try{
+            coll = new OnmsNodeList(nodeDao.findMatching(crit));
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
         
         crit.setLimit(null);
         crit.setOffset(null);
