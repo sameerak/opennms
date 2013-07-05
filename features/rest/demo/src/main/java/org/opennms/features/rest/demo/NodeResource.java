@@ -198,7 +198,7 @@ public class NodeResource {
             restrictions.add(Restrictions.ne("type", "D"));
 //            List<OnmsCategory> onmsCategory = categoryDao.findAll();
 //            restrictions.add(Restrictions.eq("categories", onmsCategory));
-//            crit.setRestrictions(restrictions);
+            crit.setRestrictions(restrictions);
             
             OnmsNodeList coll = null;
             
