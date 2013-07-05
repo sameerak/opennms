@@ -8,6 +8,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.opennms.core.criteria.Criteria;
 import org.opennms.core.criteria.CriteriaBuilder;
@@ -76,20 +77,55 @@ public class NodeResource {
      */
     @GET
     @Path("/categories")
-    public List<OnmsNode> getNodesByCategories(@QueryParam("q") List<String> categories){
-        if (categories == null){
+    public Response getNodesByCategories(@QueryParam("q") List<String> categories){
+        if (categories.isEmpty()){
             //400 bad request
-            //OR
-            //return all available categories
-            System.out.println("NO categories");
+            //will be returned with
+            //a list of available categories
+            try{    //Added for verification purposes
+                List<OnmsCategory> result = categoryDao.findAll();
+                OnmsCategory[] resultArray = null;
+                resultArray = result.toArray(new OnmsCategory[0]);
+                return Response.status(Response.Status.BAD_REQUEST).entity(resultArray).build();
+            }catch(Exception e){    //Added for verification purposes
+                System.out.println(e.getMessage());
+            }
         }
-        if (categories != null){
+        else {
             try{    //Added for verification purposes
                 List<OnmsCategory> onmsCategories = new ArrayList<OnmsCategory>();
                 for (String category : categories) {
                     onmsCategories.add(categoryDao.findByName(category));
                 }
                 List<OnmsNode> result = nodeDao.findAllByCategoryList(onmsCategories);
+                OnmsNode[] resultArray = null;
+                return Response.ok().entity(result.toArray(resultArray)).build();
+            }catch(Exception e){    //Added for verification purposes
+                System.out.println(e.getMessage());
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * 
+     * "http://localhost:8980/opennms/rest2/nodes/foreignSource/Servers"
+     * 
+     * @param category
+     * @return
+     */
+    @GET
+    @Path("/foreignSource/{foreignSource}")
+    public List<OnmsNode> getNodesByForeignSource(@PathParam("foreignSource") String foreignSource){
+        if (foreignSource == null){
+            //400 bad request
+            //OR
+            //return all available categories
+            System.out.println("NO category");
+        }
+        if (foreignSource != null){
+            try{    //Added for verification purposes
+                List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
                 return result;
             }catch(Exception e){    //Added for verification purposes
                 System.out.println(e.getMessage());
@@ -108,18 +144,14 @@ public class NodeResource {
      */
     @GET
     @Path("/categories/{category}")
-    public List<OnmsNode> getNodesByCategory(@PathParam("category") String category){
-        if (category == null){
-            //400 bad request
-            //OR
-            //return all available categories
-            System.out.println("NO category");
-        }
+    public Response getNodesByCategory(@PathParam("category") String category){
         if (category != null){
             try{    //Added for verification purposes
                 OnmsCategory onmsCategory = categoryDao.findByName(category);
                 List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
-                return result;
+                OnmsNode[] resultArray = null;
+                
+                return Response.ok().entity(result.toArray(resultArray)).build();
             }catch(Exception e){    //Added for verification purposes
                 System.out.println(e.getMessage());
             }
