@@ -99,7 +99,7 @@ public class NodeResource {
                     onmsCategories.add(categoryDao.findByName(category));
                 }
                 List<OnmsNode> result = nodeDao.findAllByCategoryList(onmsCategories);
-                OnmsNode[] resultArray = null;
+                OnmsNode[] resultArray = new OnmsNode[result.size()];
                 return Response.ok().entity(result.toArray(resultArray)).build();
             }catch(Exception e){    //Added for verification purposes
                 System.out.println(e.getMessage());
@@ -150,7 +150,7 @@ public class NodeResource {
             try{    //Added for verification purposes
                 OnmsCategory onmsCategory = categoryDao.findByName(category);
                 List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
-                OnmsNode[] resultArray = null;
+                OnmsNode[] resultArray = new OnmsNode[result.size()];
                 //TODO add validation for 0 matches
                 return Response.ok().entity(result.toArray(resultArray)).build();
             }catch(Exception e){    //Added for verification purposes
