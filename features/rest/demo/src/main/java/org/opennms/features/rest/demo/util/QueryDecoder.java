@@ -1,6 +1,10 @@
 package org.opennms.features.rest.demo.util;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.opennms.core.criteria.Alias.JoinType;
@@ -78,9 +82,9 @@ public class QueryDecoder {
         int bracketCounter = 0; //to get the location of respective closing bracket
         for (int i = 0; i < processingQuery.length(); i++) {//iterate over the given string 
             Character test = processingQuery.charAt(i);
-            if (test.equals("(")) {
+            if (test == '(') {
                 bracketCounter++;//for "(" increment bracketCounter
-            } else if (test.equals(")")) {
+            } else if (test == ')') {
                 bracketCounter--;//for ")" decrement bracketCounter
                 if (bracketCounter == 0) { 
                     //return respective closing location 
@@ -88,7 +92,7 @@ public class QueryDecoder {
                 }
             }
         }
-        return 0;
+        return 0; //if matching bracket is not found
     }
 
     /**
@@ -110,7 +114,7 @@ public class QueryDecoder {
             int pivotIndex = 0;
             
             for (Character pivot : pivotPoints) {
-                if (pivot.equals(";")) {
+                if (pivot == ';') {
                     //if AND pivot point is detected remove last element from andMergeList
                     //create new and-restriction with removed element and next component restriction
                     //add that element to andMergeList
@@ -137,9 +141,96 @@ public class QueryDecoder {
         return result;
     }
 
+    /**
+     * Method takes a complex query with AND (;) & OR (,)
+     * and returns the matching restriction
+     * 
+     * @param complexQuery - query containing AND (;) & OR (,)
+     * @return
+     */
     private static Restriction createComplexRestriction(String complexQuery) {
-        // TODO Auto-generated method stub
+        if (!complexQuery.contains(";") && !complexQuery.contains(",")) {
+            return createPrimitiveRestriction(complexQuery);
+        }
+        String[] primitiveQueryStrings = complexQuery.split(",|;");
+        
+        List<Restriction> componentRestrictions = new ArrayList<Restriction>(); //to store created primitive restrictions which are to be pivoted later
+        for (String primitiveQuery : primitiveQueryStrings) {
+            componentRestrictions.add(createPrimitiveRestriction(primitiveQuery));
+        }
+        
+        List<Character> pivotPoints = new ArrayList<Character>(); //to store values of the pivot points
+        for (int i = 0; i < complexQuery.length(); i++) {//iterate over the given complexQuery string 
+            Character test = complexQuery.charAt(i);
+            if (test == ';' || test == ',') {
+                pivotPoints.add(test);
+            }
+        }
+        
+        return mergeBracketedRestrictions(componentRestrictions, pivotPoints);
+    }
+
+    /**
+     * method to create restrictions for the primitive operators
+     * primitive operators = (==, !=, =lt=, =le=, =gt=, =ge=)
+     * 
+     * @param primitiveQuery
+     * @return
+     */
+    private static Restriction createPrimitiveRestriction(
+                                            String primitiveQuery) {
+        //pre-processing the string by split("=")
+        String[] componentStrings = primitiveQuery.split("=");
+                
+        if (componentStrings.length == 2 && componentStrings[0].endsWith("!")) {//case "!="
+            String propertyName = componentStrings[0].substring(0, componentStrings[0].length() - 1);
+            Object compareWith = getCompareObject(propertyName, componentStrings[1]);
+            return Restrictions.ne(propertyName, compareWith);
+        } 
+        else if (componentStrings.length == 3) {
+            Object compareWith = getCompareObject(componentStrings[0], componentStrings[2]);
+            
+            if (componentStrings[1].equals("")) {//case "=="
+                return Restrictions.eq(componentStrings[0], compareWith); 
+            } 
+            else if (componentStrings[1].equals("lt")) {//case "=lt="
+                return Restrictions.lt(componentStrings[0], compareWith); 
+            } 
+            else if (componentStrings[1].equals("le")) {//case "=le="
+                return Restrictions.le(componentStrings[0], compareWith); 
+            } 
+            else if (componentStrings[1].equals("gt")) {//case "=gt="
+                return Restrictions.gt(componentStrings[0], compareWith); 
+            } 
+            else if (componentStrings[1].equals("ge")) {//case "=ge="
+                return Restrictions.ge(componentStrings[0], compareWith); 
+            }
+        }
         return null;
+    }
+
+    /**
+     * For the given property name respective comparable object is created
+     * ex - createTime -> java.util.Date
+     * 
+     * TODO - extend to provide validations
+     * 
+     * @param propertyName
+     * @param compareValue
+     * @return
+     */
+    private static Object getCompareObject(String propertyName, String compareValue) {
+        if (propertyName.equals("createTime") || propertyName.equals("lastCapsdPoll")) {
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                Date formattedDate = formatter.parse(compareValue);
+                return formattedDate;
+            } catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return compareValue;
     }
 
 }

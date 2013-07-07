@@ -16,6 +16,7 @@ import org.opennms.core.criteria.Order;
 import org.opennms.core.criteria.Alias.JoinType;
 import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.core.criteria.restrictions.Restrictions;
+import org.opennms.features.rest.demo.util.QueryDecoder;
 import org.opennms.netmgt.dao.NodeDao;
 import org.opennms.netmgt.dao.CategoryDao;
 import org.opennms.netmgt.model.OnmsCategory;
@@ -150,7 +151,7 @@ public class NodeResource {
                 OnmsCategory onmsCategory = categoryDao.findByName(category);
                 List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
                 OnmsNode[] resultArray = null;
-                
+                //TODO add validation for 0 matches
                 return Response.ok().entity(result.toArray(resultArray)).build();
             }catch(Exception e){    //Added for verification purposes
                 System.out.println(e.getMessage());
@@ -167,14 +168,23 @@ public class NodeResource {
      */
     @GET
     @Path("/search")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String searchNodes(@QueryParam("_s") String queryString) {
-        return queryString;
+//    @Produces(MediaType.TEXT_PLAIN)
+    public List<OnmsNode> searchNodes(@QueryParam("_s") String queryString) {
+        //return queryString;
         //TODO
         //implement conversion from query string to core.criteria
         //to enable dynamic searching
         //Integrate searching functionality to the main URL 
         //("/nodes?_s=(age=lt=25,age=gt=35);city==London")
+        try{    //Added for verification purposes
+            Criteria crit = QueryDecoder.CreateCriteria(queryString);
+            OnmsNodeList coll = new OnmsNodeList(nodeDao.findMatching(crit));
+            return coll;
+        }catch(Exception e){    //Added for verification purposes
+            System.out.println(e.getMessage());
+        }
+        
+        return null;
     }
 
     /**
