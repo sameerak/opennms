@@ -161,7 +161,13 @@ public class NodeResource {
     }
 
     /**
-     * Testing the transmission of query parameters 
+     * quering node data using core.criteria
+     * FIQL query is transmitted as a query parameter in the http request
+     * 
+     * example URLs - 
+     * http://localhost:8980/opennms/rest2/nodes/search?_s=type==A
+     * http://localhost:8980/opennms/rest2/nodes/search?_s=createTime==2013-01-01
+     * http://localhost:8980/opennms/rest2/nodes/search?_s=createTime=gt=2013-06-14T20:41:45;(type==D,lastModifiedDate=le=2013-12-30T00:00:00)
      * 
      * @param queryString
      * @return
