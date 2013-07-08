@@ -126,6 +126,8 @@ public class QueryDecoder {
                     //else just add the next component restriction to andMergeList
                     andMergedList.add(componentRestrictions.get(pivotIndex + 1));
                 }
+                
+                pivotIndex++; //increment pivot index to access next restriction element
             }
             
             result = andMergedList.get(0);
