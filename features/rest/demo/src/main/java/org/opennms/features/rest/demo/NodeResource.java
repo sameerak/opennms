@@ -16,6 +16,7 @@ import org.opennms.core.criteria.Order;
 import org.opennms.core.criteria.Alias.JoinType;
 import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.core.criteria.restrictions.Restrictions;
+import org.opennms.features.rest.demo.exception.NotFIQLOperatorException;
 import org.opennms.features.rest.demo.util.QueryDecoder;
 import org.opennms.netmgt.dao.NodeDao;
 import org.opennms.netmgt.dao.CategoryDao;
@@ -192,7 +193,7 @@ public class NodeResource {
     @GET
     @Path("/search")
 //    @Produces(MediaType.TEXT_PLAIN)
-    public List<OnmsNode> searchNodes(@QueryParam("_s") String queryString) {
+    public Response searchNodes(@QueryParam("_s") String queryString) {
         //return queryString;
         //implemented conversion from query string to core.criteria
         //to enable dynamic searching
@@ -200,13 +201,20 @@ public class NodeResource {
         //("/nodes?_s=(age=lt=25,age=gt=35);city==London")
         try{    //Added for verification purposes
             Criteria crit = QueryDecoder.CreateCriteria(queryString);
-            OnmsNodeList coll = new OnmsNodeList(nodeDao.findMatching(crit));
-            return coll;
-        }catch(Exception e){    //Added for verification purposes
-            System.out.println(e.getMessage());
+            OnmsNodeList result = new OnmsNodeList(nodeDao.findMatching(crit));
+            if (result.isEmpty()) {         //result set is empty
+                return Response.noContent().build();
+            }
+//            OnmsNode[] resultArray = new OnmsNode[result.size()];
+            return Response.ok().entity(result).build();
         }
-        
-        return null;
+        catch(NotFIQLOperatorException e){    
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();   //in case of a unidentified error caused
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());    
+            return Response.serverError().entity(e.getMessage()).build();   //in case of a unidentified error caused
+        }
     }
 
     /**
@@ -227,9 +235,9 @@ public class NodeResource {
         final Criteria crit = builder.toCriteria();
 
         final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
-            restrictions.add(Restrictions.ne("type", "D"));
-//            List<OnmsCategory> onmsCategory = categoryDao.findAll();
-//            restrictions.add(Restrictions.eq("categories", onmsCategory));
+//            restrictions.add(Restrictions.ne("type", "D"));
+            List<OnmsCategory> onmsCategory = categoryDao.findAll();
+            restrictions.add(Restrictions.eq("categories", onmsCategory.get(0)));
             crit.setRestrictions(restrictions);
             
             OnmsNodeList coll = null;
