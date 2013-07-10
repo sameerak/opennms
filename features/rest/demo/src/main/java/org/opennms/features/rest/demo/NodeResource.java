@@ -22,6 +22,8 @@ import org.opennms.netmgt.dao.CategoryDao;
 import org.opennms.netmgt.model.OnmsCategory;
 import org.opennms.netmgt.model.OnmsNode;
 import org.opennms.netmgt.model.OnmsNodeList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/nodes")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -29,7 +31,8 @@ public class NodeResource {
 
     private NodeDao nodeDao;
     private CategoryDao categoryDao;
-
+    private static Logger logger = LoggerFactory.getLogger(NodeResource.class);
+    
     /**
      * get a list of all the nodes present in the system
      * @return List<OnmsNode>
@@ -83,13 +86,10 @@ public class NodeResource {
             if (categories.isEmpty()){
                 /*
                  * options to consider
-                 * - 400 bad request will be returned with a list of available categories
+                 * - 400 bad request will be returned with a list of available categories - implemented
                  * - 200 oK with a collection of all the nodes available
                  * - 400 bad request with a error message
                  */
-                //400 bad request
-                //will be returned with
-                //a list of available categories
                 List<OnmsCategory> result = categoryDao.findAll();
                 OnmsCategory[] resultArray = null;
                 resultArray = result.toArray(new OnmsCategory[0]);
@@ -112,7 +112,7 @@ public class NodeResource {
                 return Response.ok().entity(result.toArray(resultArray)).build();
             }
         }catch(Exception e){    //Added for verification purposes
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage(), e);
             //TODO refine the http response body
             return Response.serverError().entity(e.getMessage()).build();       //in case of a unidentified error caused
         }
@@ -142,8 +142,8 @@ public class NodeResource {
             }
             OnmsNode[] resultArray = new OnmsNode[result.size()];
             return Response.ok().entity(result.toArray(resultArray)).build();
-        }catch(Exception e){    
-            System.out.println(e.getMessage());
+        }catch(Exception e){  
+            logger.error(e.getMessage(), e);  
             //TODO refine the http response body
             return Response.serverError().entity(e.getMessage()).build();   //in case of a unidentified error caused
         }
@@ -170,6 +170,7 @@ public class NodeResource {
                 List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
                 return result;
             }catch(Exception e){    //Added for verification purposes
+                logger.error(e.getMessage(), e);
                 System.out.println(e.getMessage());
             }
         }
