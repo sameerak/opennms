@@ -90,6 +90,7 @@ public class NodeResource {
                 return Response.status(Response.Status.BAD_REQUEST).entity(resultArray).build();
             }catch(Exception e){    //Added for verification purposes
                 System.out.println(e.getMessage());
+                return null;
             }
         }
         else {
@@ -103,9 +104,9 @@ public class NodeResource {
                 return Response.ok().entity(result.toArray(resultArray)).build();
             }catch(Exception e){    //Added for verification purposes
                 System.out.println(e.getMessage());
+                return null;
             }
         }
-        return null;
     }
     
     /**
@@ -146,18 +147,24 @@ public class NodeResource {
     @GET
     @Path("/categories/{category}")
     public Response getNodesByCategory(@PathParam("category") String category){
-        if (category != null){
-            try{    //Added for verification purposes
-                OnmsCategory onmsCategory = categoryDao.findByName(category);
-                List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
-                OnmsNode[] resultArray = new OnmsNode[result.size()];
-                //TODO add validation for 0 matches
-                return Response.ok().entity(result.toArray(resultArray)).build();
-            }catch(Exception e){    //Added for verification purposes
-                System.out.println(e.getMessage());
+        //{category} == null case is handled by getNodesByCategories method
+        //therefore no need to check it
+        try{    
+            OnmsCategory onmsCategory = categoryDao.findByName(category);
+            if (onmsCategory == null){                                      // invalid category specified
+                return Response.status(Response.Status.BAD_REQUEST).entity("Please specify a valid category").build();
             }
+            List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
+            if (result.isEmpty()) {                                         //result set is empty
+                return Response.noContent().build();
+            }
+            OnmsNode[] resultArray = new OnmsNode[result.size()];
+            return Response.ok().entity(result.toArray(resultArray)).build();
+        }catch(Exception e){    
+            System.out.println(e.getMessage());
+            //TODO refine the http response body
+            return Response.serverError().entity(e).build();                //in case of a unidentified error caused
         }
-        return null;
     }
 
     /**
@@ -177,8 +184,7 @@ public class NodeResource {
 //    @Produces(MediaType.TEXT_PLAIN)
     public List<OnmsNode> searchNodes(@QueryParam("_s") String queryString) {
         //return queryString;
-        //TODO
-        //implement conversion from query string to core.criteria
+        //implemented conversion from query string to core.criteria
         //to enable dynamic searching
         //Integrate searching functionality to the main URL 
         //("/nodes?_s=(age=lt=25,age=gt=35);city==London")
