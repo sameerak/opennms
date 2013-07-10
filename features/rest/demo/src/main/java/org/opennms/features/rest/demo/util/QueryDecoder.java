@@ -12,11 +12,12 @@ import org.opennms.core.criteria.Criteria;
 import org.opennms.core.criteria.CriteriaBuilder;
 import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.core.criteria.restrictions.Restrictions;
+import org.opennms.features.rest.demo.exception.NotFIQLOperatorException;
 import org.opennms.netmgt.model.OnmsNode;
 
 public class QueryDecoder {
 
-    public static Criteria CreateCriteria(String fiqlQuery){
+    public static Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException{
         final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
         builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
         builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
@@ -39,8 +40,9 @@ public class QueryDecoder {
      * 
      * @param bracketedQuery
      * @return
+     * @throws NotFIQLOperatorException 
      */
-    private static Restriction removeBrackets(String bracketedQuery) {
+    private static Restriction removeBrackets(String bracketedQuery) throws NotFIQLOperatorException {
         int newOpenBracket = bracketedQuery.indexOf("(");
                 
         if (newOpenBracket != -1){ //if provided query contains an opening bracket
@@ -149,8 +151,9 @@ public class QueryDecoder {
      * 
      * @param complexQuery - query containing AND (;) & OR (,)
      * @return
+     * @throws NotFIQLOperatorException 
      */
-    private static Restriction createComplexRestriction(String complexQuery) {
+    private static Restriction createComplexRestriction(String complexQuery) throws NotFIQLOperatorException {
         if (!complexQuery.contains(";") && !complexQuery.contains(",")) {
             return createPrimitiveRestriction(complexQuery);
         }
@@ -178,9 +181,10 @@ public class QueryDecoder {
      * 
      * @param primitiveQuery
      * @return
+     * @throws NotFIQLOperatorException 
      */
     private static Restriction createPrimitiveRestriction(
-                                            String primitiveQuery) {
+                                            String primitiveQuery) throws NotFIQLOperatorException {
         //pre-processing the string by split("=")
         String[] componentStrings = primitiveQuery.split("=");
                 
@@ -208,7 +212,8 @@ public class QueryDecoder {
                 return Restrictions.ge(componentStrings[0], compareWith); 
             }
         }
-        return null;
+        throw new NotFIQLOperatorException("operator used with query string \"" + primitiveQuery + 
+                                           "\" is invalid. Please specify a valid operator.");
     }
 
     /**
