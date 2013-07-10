@@ -79,61 +79,43 @@ public class NodeResource {
     @GET
     @Path("/categories")
     public Response getNodesByCategories(@QueryParam("q") List<String> categories){
-        if (categories.isEmpty()){
-            //400 bad request
-            //will be returned with
-            //a list of available categories
-            try{    //Added for verification purposes
+        try{    //Added for verification purposes
+            if (categories.isEmpty()){
+                /*
+                 * options to consider
+                 * - 400 bad request will be returned with a list of available categories
+                 * - 200 oK with a collection of all the nodes available
+                 * - 400 bad request with a error message
+                 */
+                //400 bad request
+                //will be returned with
+                //a list of available categories
                 List<OnmsCategory> result = categoryDao.findAll();
                 OnmsCategory[] resultArray = null;
                 resultArray = result.toArray(new OnmsCategory[0]);
                 return Response.status(Response.Status.BAD_REQUEST).entity(resultArray).build();
-            }catch(Exception e){    //Added for verification purposes
-                System.out.println(e.getMessage());
-                return null;
             }
-        }
-        else {
-            try{    //Added for verification purposes
+            else {
                 List<OnmsCategory> onmsCategories = new ArrayList<OnmsCategory>();
                 for (String category : categories) {
                     onmsCategories.add(categoryDao.findByName(category));
+                    if (onmsCategories.get(onmsCategories.size() - 1) == null){ // invalid category specified
+                        return Response.status(Response.Status.BAD_REQUEST).
+                                entity("Please specify a set of valid categories").build();
+                    }
                 }
                 List<OnmsNode> result = nodeDao.findAllByCategoryList(onmsCategories);
+                if (result.isEmpty()) {                                         //result set is empty
+                    return Response.noContent().build();
+                }
                 OnmsNode[] resultArray = new OnmsNode[result.size()];
                 return Response.ok().entity(result.toArray(resultArray)).build();
-            }catch(Exception e){    //Added for verification purposes
-                System.out.println(e.getMessage());
-                return null;
             }
+        }catch(Exception e){    //Added for verification purposes
+            System.out.println(e.getMessage());
+            //TODO refine the http response body
+            return Response.serverError().entity(e.getMessage()).build();       //in case of a unidentified error caused
         }
-    }
-    
-    /**
-     * 
-     * "http://localhost:8980/opennms/rest2/nodes/foreignSource/Servers"
-     * 
-     * @param category
-     * @return
-     */
-    @GET
-    @Path("/foreignSource/{foreignSource}")
-    public List<OnmsNode> getNodesByForeignSource(@PathParam("foreignSource") String foreignSource){
-        if (foreignSource == null){
-            //400 bad request
-            //OR
-            //return all available categories
-            System.out.println("NO category");
-        }
-        if (foreignSource != null){
-            try{    //Added for verification purposes
-                List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
-                return result;
-            }catch(Exception e){    //Added for verification purposes
-                System.out.println(e.getMessage());
-            }
-        }
-        return null;
     }
     
     /**
@@ -163,10 +145,37 @@ public class NodeResource {
         }catch(Exception e){    
             System.out.println(e.getMessage());
             //TODO refine the http response body
-            return Response.serverError().entity(e).build();                //in case of a unidentified error caused
+            return Response.serverError().entity(e.getMessage()).build();   //in case of a unidentified error caused
         }
     }
 
+    /**
+     * 
+     * "http://localhost:8980/opennms/rest2/nodes/foreignSource/Servers"
+     * 
+     * @param category
+     * @return
+     */
+    @GET
+    @Path("/foreignSource/{foreignSource}")
+    public List<OnmsNode> getNodesByForeignSource(@PathParam("foreignSource") String foreignSource){
+        if (foreignSource == null){
+            //400 bad request
+            //OR
+            //return all available categories
+            System.out.println("NO category");
+        }
+        if (foreignSource != null){
+            try{    //Added for verification purposes
+                List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
+                return result;
+            }catch(Exception e){    //Added for verification purposes
+                System.out.println(e.getMessage());
+            }
+        }
+        return null;
+    }
+    
     /**
      * quering node data using core.criteria
      * FIQL query is transmitted as a query parameter in the http request
