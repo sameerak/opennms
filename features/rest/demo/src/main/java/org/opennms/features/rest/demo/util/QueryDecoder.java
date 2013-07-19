@@ -1,39 +1,24 @@
 package org.opennms.features.rest.demo.util;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import org.opennms.core.criteria.Alias.JoinType;
 import org.opennms.core.criteria.Criteria;
-import org.opennms.core.criteria.CriteriaBuilder;
 import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.core.criteria.restrictions.Restrictions;
 import org.opennms.features.rest.demo.exception.NotFIQLOperatorException;
-import org.opennms.netmgt.model.OnmsNode;
 
-public class QueryDecoder {
+public abstract class QueryDecoder {
 
-    public static Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException{
-        final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
-        builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
-        builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
-        builder.alias("categories", "category", JoinType.LEFT_JOIN);
-
-        builder.orderBy("label").asc();
-        
-        final Criteria crit = builder.toCriteria();
-        
-        final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
-        Restriction restriction = removeBrackets(fiqlQuery);
-        restrictions.add(restriction);
-        crit.setRestrictions(restrictions);
-        
-        return crit;
-    }
+    /**
+     * Extended class should implement this method in order to
+     * create criteria object for a given FIQL query
+     * 
+     * @param fiqlQuery
+     * @return
+     * @throws NotFIQLOperatorException
+     */
+    public abstract Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException;
     
     /**
      * create a Restriction object out of the queries containing brackets
@@ -42,7 +27,7 @@ public class QueryDecoder {
      * @return
      * @throws NotFIQLOperatorException 
      */
-    private static Restriction removeBrackets(String bracketedQuery) throws NotFIQLOperatorException {
+    protected Restriction removeBrackets(String bracketedQuery) throws NotFIQLOperatorException {
         int newOpenBracket = bracketedQuery.indexOf("(");
                 
         if (newOpenBracket != -1){ //if provided query contains an opening bracket
@@ -80,7 +65,7 @@ public class QueryDecoder {
      * @param processing - a string starting with an opening bracket "("
      * @return index of respective closing bracket wrt starting "("
      */
-    private static int extractBracketEndPoint(String processingQuery) {
+    private int extractBracketEndPoint(String processingQuery) {
         int bracketCounter = 0; //to get the location of respective closing bracket
         for (int i = 0; i < processingQuery.length(); i++) {//iterate over the given string 
             Character test = processingQuery.charAt(i);
@@ -153,7 +138,7 @@ public class QueryDecoder {
      * @return
      * @throws NotFIQLOperatorException 
      */
-    private static Restriction createComplexRestriction(String complexQuery) throws NotFIQLOperatorException {
+    private Restriction createComplexRestriction(String complexQuery) throws NotFIQLOperatorException {
         if (!complexQuery.contains(";") && !complexQuery.contains(",")) {
             return createPrimitiveRestriction(complexQuery);
         }
@@ -183,7 +168,7 @@ public class QueryDecoder {
      * @return
      * @throws NotFIQLOperatorException 
      */
-    private static Restriction createPrimitiveRestriction(
+    private Restriction createPrimitiveRestriction(
                                             String primitiveQuery) throws NotFIQLOperatorException {
         //pre-processing the string by split("=")
         String[] componentStrings = primitiveQuery.split("=");
@@ -218,26 +203,12 @@ public class QueryDecoder {
 
     /**
      * For the given property name respective comparable object is created
-     * ex - createTime -> java.util.Date
-     * 
-     * TODO - extend to provide validations
+     * other than creating the comparable object validation checks can be added
      * 
      * @param propertyName
      * @param compareValue
      * @return
      */
-    private static Object getCompareObject(String propertyName, String compareValue) {
-        if (propertyName.equals("createTime") || propertyName.equals("lastCapsdPoll")) {
-            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            try {
-                Date formattedDate = formatter.parse(compareValue);
-                return formattedDate;
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        return compareValue;
-    }
+    protected abstract Object getCompareObject(String propertyName, String compareValue);
 
 }

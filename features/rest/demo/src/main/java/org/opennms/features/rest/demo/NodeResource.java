@@ -1,6 +1,10 @@
 package org.opennms.features.rest.demo;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 @Path("/nodes")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-public class NodeResource {
+public class NodeResource extends QueryDecoder{
 
     private NodeDao nodeDao;
     private CategoryDao categoryDao;
@@ -131,7 +135,7 @@ public class NodeResource {
     @Path("/categories/{category}")
     public Response getNodesByCategory(@PathParam("category") String category){
         //{category} == null case is handled by getNodesByCategories method
-        //therefore no need to check it
+        //therefore no need to check it in this method
         try{    
             OnmsCategory onmsCategory = categoryDao.findByName(category);
             if (onmsCategory == null){                                      // invalid category specified
@@ -192,29 +196,70 @@ public class NodeResource {
      */
     @GET
     @Path("/search")
-//    @Produces(MediaType.TEXT_PLAIN)
     public Response searchNodes(@QueryParam("_s") String queryString) {
-        //return queryString;
-        //implemented conversion from query string to core.criteria
-        //to enable dynamic searching
-        //Integrate searching functionality to the main URL 
-        //("/nodes?_s=(age=lt=25,age=gt=35);city==London")
-        try{    //Added for verification purposes
-            Criteria crit = QueryDecoder.CreateCriteria(queryString);
+        try{
+            Criteria crit = CreateCriteria(queryString);
             OnmsNodeList result = new OnmsNodeList(nodeDao.findMatching(crit));
             if (result.isEmpty()) {         //result set is empty
                 return Response.noContent().build();
             }
-//            OnmsNode[] resultArray = new OnmsNode[result.size()];
             return Response.ok().entity(result).build();
         }
-        catch(NotFIQLOperatorException e){    
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();   //in case of a unidentified error caused
+        catch(NotFIQLOperatorException e){    //in a case where user has specified an invalid FIQL operator
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();   
         }
         catch(Exception e){
             System.out.println(e.getMessage());    
-            return Response.serverError().entity(e.getMessage()).build();   //in case of a unidentified error caused
+            return Response.serverError().entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
+    }
+    
+    /**
+     * implemented abstract method from QueryDecoder class
+     * in order to create the appropriate criteria object
+     * 
+     */
+    public Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException{
+        final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
+        builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
+        builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
+        builder.alias("categories", "category", JoinType.LEFT_JOIN);
+
+        builder.orderBy("label").asc();
+        
+        final Criteria crit = builder.toCriteria();
+        
+        final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
+        Restriction restriction = removeBrackets(fiqlQuery);
+        restrictions.add(restriction);
+        crit.setRestrictions(restrictions);
+        
+        return crit;
+    }
+    
+    /**
+     * implemented abstract method from QueryDecoder class
+     * For the given property name respective comparable object is created
+     * ex - createTime -> java.util.Date
+     * 
+     * TODO - extend to provide validations
+     * 
+     * @param propertyName
+     * @param compareValue
+     * @return
+     */
+    protected Object getCompareObject(String propertyName, String compareValue) {
+        if (propertyName.equals("createTime") || propertyName.equals("lastCapsdPoll")) {
+            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                Date formattedDate = formatter.parse(compareValue);
+                return formattedDate;
+            } catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return compareValue;
     }
 
     /**
