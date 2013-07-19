@@ -108,7 +108,7 @@ public class NodeResource extends QueryDecoder{
                 for (String category : categories) {
                     onmsCategories.add(categoryDao.findByName(category));
                     if (onmsCategories.get(onmsCategories.size() - 1) == null){ // invalid category specified
-                        return Response.status(Response.Status.BAD_REQUEST).
+                        return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).
                                 entity("Please specify a set of valid categories").build();
                     }
                 }
@@ -122,7 +122,7 @@ public class NodeResource extends QueryDecoder{
         }catch(Exception e){    //Added for verification purposes
             logger.error(e.getMessage(), e);
             //TODO refine the http response body
-            return Response.serverError().entity(e.getMessage()).build();       //in case of a unidentified error caused
+            return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();       //in case of a unidentified error caused
         }
     }
     
@@ -142,7 +142,7 @@ public class NodeResource extends QueryDecoder{
         try{    
             OnmsCategory onmsCategory = categoryDao.findByName(category);
             if (onmsCategory == null){                                      // invalid category specified
-                return Response.status(Response.Status.BAD_REQUEST).entity("Please specify a valid category").build();
+                return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid category").build();
             }
             List<OnmsNode> result = nodeDao.findByCategory(onmsCategory);
             if (result.isEmpty()) {                                         //result set is empty
@@ -153,7 +153,7 @@ public class NodeResource extends QueryDecoder{
         }catch(Exception e){  
             logger.error(e.getMessage(), e);  
             //TODO refine the http response body
-            return Response.serverError().entity(e.getMessage()).build();   //in case of a unidentified error caused
+            return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of a unidentified error caused
         }
     }
 
