@@ -54,9 +54,12 @@ public class NodeResource extends QueryDecoder{
      */
     @GET
     @Path("{nodeId}")
-    public OnmsNode getNode(@PathParam("nodeId") final String nodeId) {
+    public Response getNode(@PathParam("nodeId") final String nodeId) {
         OnmsNode result = nodeDao.get(nodeId);
-        return result;
+        if (result == null) {
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid node ID").build();
+        }
+        return Response.ok().entity(result).build();
     }
 
     /**
