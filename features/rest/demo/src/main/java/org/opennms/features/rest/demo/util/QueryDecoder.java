@@ -17,17 +17,18 @@ public abstract class QueryDecoder {
      * @param fiqlQuery
      * @return
      * @throws NotFIQLOperatorException
+     * @throws Exception 
      */
-    public abstract Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException;
+    public abstract Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException, Exception;
     
     /**
      * create a Restriction object out of the queries containing brackets
      * 
      * @param bracketedQuery
      * @return
-     * @throws NotFIQLOperatorException 
+     * @throws Exception 
      */
-    protected Restriction removeBrackets(String bracketedQuery) throws NotFIQLOperatorException {
+    protected Restriction removeBrackets(String bracketedQuery) throws Exception {
         int newOpenBracket = bracketedQuery.indexOf("(");
                 
         if (newOpenBracket != -1){ //if provided query contains an opening bracket
@@ -136,9 +137,9 @@ public abstract class QueryDecoder {
      * 
      * @param complexQuery - query containing AND (;) & OR (,)
      * @return
-     * @throws NotFIQLOperatorException 
+     * @throws Exception 
      */
-    private Restriction createComplexRestriction(String complexQuery) throws NotFIQLOperatorException {
+    private Restriction createComplexRestriction(String complexQuery) throws Exception {
         if (!complexQuery.contains(";") && !complexQuery.contains(",")) {
             return createPrimitiveRestriction(complexQuery);
         }
@@ -166,10 +167,10 @@ public abstract class QueryDecoder {
      * 
      * @param primitiveQuery
      * @return
-     * @throws NotFIQLOperatorException 
+     * @throws Exception 
      */
     private Restriction createPrimitiveRestriction(
-                                            String primitiveQuery) throws NotFIQLOperatorException {
+                                            String primitiveQuery) throws Exception {
         //pre-processing the string by split("=")
         String[] componentStrings = primitiveQuery.split("=");
                 
@@ -209,6 +210,6 @@ public abstract class QueryDecoder {
      * @param compareValue
      * @return
      */
-    protected abstract Object getCompareObject(String propertyName, String compareValue);
+    protected abstract Object getCompareObject(String propertyName, String compareValue) throws Exception;
 
 }
