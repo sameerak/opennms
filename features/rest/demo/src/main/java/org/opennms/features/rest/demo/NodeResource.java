@@ -206,20 +206,24 @@ public class NodeResource extends QueryDecoder{
             return Response.ok().entity(result).build();
         }
         catch(NotFIQLOperatorException e){    //in a case where user has specified an invalid FIQL operator
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();   
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
+        }
+        catch(ParseException e){    //in a case where user has provided data in wrong format
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
         catch(Exception e){
             System.out.println(e.getMessage());    
-            return Response.serverError().entity(e.getMessage()).build();   //in case of an unidentified error caused
+            return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
     }
     
     /**
      * implemented abstract method from QueryDecoder class
      * in order to create the appropriate criteria object
+     * @throws Exception 
      * 
      */
-    public Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException{
+    public Criteria CreateCriteria(String fiqlQuery) throws Exception{
         final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
         builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
         builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
@@ -247,8 +251,9 @@ public class NodeResource extends QueryDecoder{
      * @param propertyName
      * @param compareValue
      * @return
+     * @throws ParseException 
      */
-    protected Object getCompareObject(String propertyName, String compareValue) {
+    protected Object getCompareObject(String propertyName, String compareValue) throws ParseException {
         if (propertyName.equals("createTime") || propertyName.equals("lastCapsdPoll")) {
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             try {
@@ -257,6 +262,7 @@ public class NodeResource extends QueryDecoder{
             } catch (ParseException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
             }
         }
         return compareValue;
