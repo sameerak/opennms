@@ -166,23 +166,22 @@ public class NodeResource extends QueryDecoder{
      */
     @GET
     @Path("/foreignSource/{foreignSource}")
-    public List<OnmsNode> getNodesByForeignSource(@PathParam("foreignSource") String foreignSource){
+    public Response getNodesByForeignSource(@PathParam("foreignSource") String foreignSource){
         if (foreignSource == null){
             //400 bad request
-            //OR
-            //return all available categories
-            System.out.println("NO category");
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid foreignSource").build();
         }
-        if (foreignSource != null){
-            try{    //Added for verification purposes
-                List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
-                return result;
-            }catch(Exception e){    //Added for verification purposes
-                logger.error(e.getMessage(), e);
-                System.out.println(e.getMessage());
+       try{
+            List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
+            if (result.isEmpty()) {                                         //result set is empty
+                return Response.noContent().build();
             }
+            OnmsNode[] resultArray = new OnmsNode[result.size()];
+            return Response.ok().entity(result.toArray(resultArray)).build();
+        }catch(Exception e){
+            logger.error(e.getMessage(), e);
+            return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of a unidentified error caused
         }
-        return null;
     }
     
     /**
