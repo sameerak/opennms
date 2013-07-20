@@ -154,9 +154,20 @@ public class NodeResource extends QueryDecoder{
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of a unidentified error caused
         }
     }
+    
+    /**
+     * Method added to validate empty foreign source string
+     * @return
+     */
+    @GET
+    @Path("/foreignSource")
+    public Response getNodesByForeignSource(){
+        //400 bad request
+        return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid foreignSource").build();        
+    }
 
     /**
-     * 
+     * Method to find all nodes belonging to a given foreign source name 
      * "http://localhost:8980/opennms/rest2/nodes/foreignSource/Servers"
      * 
      * @param category
@@ -165,10 +176,7 @@ public class NodeResource extends QueryDecoder{
     @GET
     @Path("/foreignSource/{foreignSource}")
     public Response getNodesByForeignSource(@PathParam("foreignSource") String foreignSource){
-        if (foreignSource == null){
-            //400 bad request
-            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid foreignSource").build();
-        }
+       //empty variable foreignSource is handled by overloaded method getNodesByForeignSource()
        try{
             List<OnmsNode> result = nodeDao.findByForeignSource(foreignSource);
             if (result.isEmpty()) {                                         //result set is empty
