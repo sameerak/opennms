@@ -37,7 +37,23 @@ public class NodeResource extends QueryDecoder{
     private NodeDao nodeDao;
     private CategoryDao categoryDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);
+
+    /**
+     * method to initialize local variable nodeDao using blueprint
+     * @param nodeDao
+     */
+    public void setNodeDao(NodeDao nodeDao) {
+        this.nodeDao = nodeDao;
+    }
     
+    /**
+     * method to initialize local variable categoryDao using blueprint
+     * @param categoryDao
+     */
+    public void setCategoryDao(CategoryDao categoryDao) {
+        this.categoryDao = categoryDao;
+    }
+        
     /**
      * get a list of all the nodes present in the system
      * @return List<OnmsNode>
@@ -62,22 +78,6 @@ public class NodeResource extends QueryDecoder{
         return Response.ok().entity(result).build();
     }
 
-    /**
-     * method to initialize local variable nodeDao using blueprint
-     * @param nodeDao
-     */
-    public void setNodeDao(NodeDao nodeDao) {
-        this.nodeDao = nodeDao;
-    }
-    
-    /**
-     * method to initialize local variable categoryDao using blueprint
-     * @param categoryDao
-     */
-    public void setCategoryDao(CategoryDao categoryDao) {
-        this.categoryDao = categoryDao;
-    }
-    
     /**
      * method to get nodes belonging to several specified categories
      * categories are specified as an array of strings
@@ -121,7 +121,6 @@ public class NodeResource extends QueryDecoder{
             }
         }catch(Exception e){    //Added for verification purposes
             logger.error(e.getMessage(), e);
-            //TODO refine the http response body
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();       //in case of a unidentified error caused
         }
     }
@@ -152,7 +151,6 @@ public class NodeResource extends QueryDecoder{
             return Response.ok().entity(result.toArray(resultArray)).build();
         }catch(Exception e){  
             logger.error(e.getMessage(), e);  
-            //TODO refine the http response body
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of a unidentified error caused
         }
     }
@@ -262,7 +260,6 @@ public class NodeResource extends QueryDecoder{
                 Date formattedDate = formatter.parse(compareValue);
                 return formattedDate;
             } catch (ParseException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
             }
