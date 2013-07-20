@@ -272,6 +272,13 @@ public class NodeResource extends QueryDecoder{
                 throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
             }
         }
+        else if (propertyName.equals("categories")) {
+            OnmsCategory onmsCategory = categoryDao.findByName(compareValue);
+            if (onmsCategory == null){                                      // invalid category specified
+                throw new ParseException("Please specify a valid category instead of \"" + compareValue + "\"", 0);
+            }
+            return onmsCategory;
+        }
         return compareValue;
     }
 
