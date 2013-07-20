@@ -52,6 +52,19 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+<plugin>
+      <groupId>org.apache.servicemix.tooling</groupId>
+      <artifactId>depends-maven-plugin</artifactId>
+      <version>${plugin.depends.version}</version>
+      <executions>
+        <execution>
+          <id>generate-depends-file</id>
+          <goals>
+            <goal>generate-depends-file</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -92,6 +105,28 @@
             <version>1.1.1</version>
             <scope>provided</scope>
         </dependency>
+
+      	<!-- Karaf Test Framework Version -->
+<dependency>
+  <groupId>org.apache.karaf.tooling.exam</groupId>
+  <artifactId>org.apache.karaf.tooling.exam.container</artifactId>
+  <version>2.3.0</version>
+  <scope>test</scope>
+</dependency>
+<!-- Pax Exam version you would like to use. At least 2.2.x is required. -->
+<dependency>
+  <groupId>org.ops4j.pax.exam</groupId>
+  <artifactId>pax-exam-junit4</artifactId>
+  <version>2.2.0</version>
+  <scope>test</scope>
+</dependency>
+
+<dependency>
+  <groupId>org.apache.karaf</groupId>
+  <artifactId>apache-karaf</artifactId>
+  <version>2.3.0</version>
+  <type>zip</type>
+  <scope>test</scope>
+</dependency>
     </dependencies>
-  
 </project>
