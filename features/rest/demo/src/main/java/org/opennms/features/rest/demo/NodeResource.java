@@ -90,7 +90,7 @@ public class NodeResource extends QueryDecoder{
     @GET
     @Path("/categories")
     public Response getNodesByCategories(@QueryParam("q") List<String> categories){
-        try{    //Added for verification purposes
+        try{    
             if (categories.isEmpty()){
                 /*
                  * options to consider
@@ -119,7 +119,7 @@ public class NodeResource extends QueryDecoder{
                 OnmsNode[] resultArray = new OnmsNode[result.size()];
                 return Response.ok().entity(result.toArray(resultArray)).build();
             }
-        }catch(Exception e){    //Added for verification purposes
+        }catch(Exception e){    
             logger.error(e.getMessage(), e);
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();       //in case of a unidentified error caused
         }
@@ -212,7 +212,7 @@ public class NodeResource extends QueryDecoder{
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
         catch(Exception e){
-            System.out.println(e.getMessage());    
+            logger.error(e.getMessage(), e);    
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
     }
