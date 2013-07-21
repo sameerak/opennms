@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 @Path("/nodes")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-public class NodeResource extends QueryDecoder{
+public class NodeResource{
 
     private NodeDao nodeDao;
     private CategoryDao categoryDao;
@@ -206,7 +206,8 @@ public class NodeResource extends QueryDecoder{
     @Path("/search")
     public Response searchNodes(@QueryParam("_s") String queryString) {
         try{
-            Criteria crit = CreateCriteria(queryString);
+            NodeQueryDecoder nqd = new NodeQueryDecoder();
+            Criteria crit = nqd.CreateCriteria(queryString);
             OnmsNodeList result = new OnmsNodeList(nodeDao.findMatching(crit));
             if (result.isEmpty()) {         //result set is empty
                 return Response.noContent().build();
@@ -226,62 +227,69 @@ public class NodeResource extends QueryDecoder{
     }
     
     /**
-     * implemented abstract method from QueryDecoder class
-     * in order to create the appropriate criteria object
-     * @throws Exception 
-     * 
+     * inner class to do the query decoding part of the search function 
+     *
      */
-    public Criteria CreateCriteria(String fiqlQuery) throws Exception{
-        final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
-        builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
-        builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
-        builder.alias("categories", "category", JoinType.LEFT_JOIN);
-
-        builder.orderBy("label").asc();
+    private class NodeQueryDecoder extends QueryDecoder { //start of inner class
         
-        final Criteria crit = builder.toCriteria();
-        
-        final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
-        Restriction restriction = removeBrackets(fiqlQuery);
-        restrictions.add(restriction);
-        crit.setRestrictions(restrictions);
-        
-        return crit;
-    }
+        /**
+         * implemented abstract method from QueryDecoder class
+         * in order to create the appropriate criteria object
+         * @throws Exception 
+         * 
+         */
+        public Criteria CreateCriteria(String fiqlQuery) throws Exception{
+            final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
+            builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
+            builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
+            builder.alias("categories", "category", JoinType.LEFT_JOIN);
     
-    /**
-     * implemented abstract method from QueryDecoder class
-     * For the given property name respective comparable object is created
-     * ex - createTime -> java.util.Date
-     * 
-     * TODO - extend to provide validations
-     * 
-     * @param propertyName
-     * @param compareValue
-     * @return
-     * @throws ParseException 
-     */
-    protected Object getCompareObject(String propertyName, String compareValue) throws ParseException {
-        if (propertyName.equals("createTime") || propertyName.equals("lastCapsdPoll")) {
-            DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            try {
-                Date formattedDate = formatter.parse(compareValue);
-                return formattedDate;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
-            }
+            builder.orderBy("label").asc();
+            
+            final Criteria crit = builder.toCriteria();
+            
+            final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
+            Restriction restriction = removeBrackets(fiqlQuery);
+            restrictions.add(restriction);
+            crit.setRestrictions(restrictions);
+            
+            return crit;
         }
-        else if (propertyName.equals("categories")) {
-            OnmsCategory onmsCategory = categoryDao.findByName(compareValue);
-            if (onmsCategory == null){                                      // invalid category specified
-                throw new ParseException("Please specify a valid category instead of \"" + compareValue + "\"", 0);
+        
+        /**
+         * implemented abstract method from QueryDecoder class
+         * For the given property name respective comparable object is created
+         * ex - createTime -> java.util.Date
+         * 
+         * TODO - extend to provide validations
+         * 
+         * @param propertyName
+         * @param compareValue
+         * @return
+         * @throws ParseException 
+         */
+        protected Object getCompareObject(String propertyName, String compareValue) throws ParseException {
+            if (propertyName.equals("createTime") || propertyName.equals("lastCapsdPoll")) {
+                DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                try {
+                    Date formattedDate = formatter.parse(compareValue);
+                    return formattedDate;
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
+                }
             }
-            return onmsCategory;
+            else if (propertyName.equals("categories")) {
+                OnmsCategory onmsCategory = categoryDao.findByName(compareValue);
+                if (onmsCategory == null){                                      // invalid category specified
+                    throw new ParseException("Please specify a valid category instead of \"" + compareValue + "\"", 0);
+                }
+                return onmsCategory;
+            }
+            return compareValue;
         }
-        return compareValue;
-    }
-
+    }//end of inner class
+    
     /**
      * method to test the criteria for node searching
      * based on the NodeRestService of old REST API
