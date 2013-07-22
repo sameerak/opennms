@@ -15,11 +15,17 @@
       http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
 ">
     <reference id="nodeDao" interface="org.opennms.netmgt.dao.NodeDao" />
+    <reference id="eventDao" interface="org.opennms.netmgt.dao.EventDao" />
     <reference id="categoryDao" interface="org.opennms.netmgt.dao.CategoryDao" />
     
     <bean id="nodeResource" class="org.opennms.features.rest.demo.NodeResource">
         <property name="nodeDao" ref="nodeDao" />
         <property name="categoryDao" ref="categoryDao" />
+    </bean>
+
+    <bean id="eventResource" class="org.opennms.features.rest.demo.EventResource">
+        <property name="nodeDao" ref="nodeDao" /> 
+        <property name="eventDao" ref="eventDao" /> 
     </bean>
 
     <cxf:bus id="restBus">
@@ -31,6 +37,7 @@
     <jaxrs:server id="restServer">
         <jaxrs:serviceBeans>
             <ref component-id="nodeResource" />
+            <ref component-id="eventResource" />
         </jaxrs:serviceBeans>
     </jaxrs:server>
   
