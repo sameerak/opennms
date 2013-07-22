@@ -279,6 +279,9 @@ public class NodeResource{
                     throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
                 }
             }
+            else if (propertyName.equals("id")) {
+                return Integer.parseInt(compareValue);
+            }
             else if (propertyName.equals("categories")) {
                 OnmsCategory onmsCategory = categoryDao.findByName(compareValue);
                 if (onmsCategory == null){                                      // invalid category specified
