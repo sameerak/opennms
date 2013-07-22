@@ -138,6 +138,9 @@ public class EventResource {
                     throw new ParseException("Please specify dates in format \"yyyy-MM-dd'T'HH:mm:ss\"", 0);
                 }
             }
+            else if (propertyName.equals("eventId") || propertyName.equals("eventSeverity")) {
+                return Integer.parseInt(compareValue);
+            }
             return compareValue;
         }
     }//end of inner class
