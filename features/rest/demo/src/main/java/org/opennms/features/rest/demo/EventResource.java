@@ -52,8 +52,8 @@ public class EventResource {
     @Path("/search")
     public Response searchNodes(@QueryParam("_s") String queryString) {
         try{
-            EventQueryDecoder eqd = new EventQueryDecoder();
-            Criteria crit = eqd.CreateCriteria(queryString);
+            QueryDecoder eqd = new EventQueryDecoder();
+            Criteria crit = eqd.FIQLtoCriteria(queryString);
             OnmsEventCollection result = new OnmsEventCollection(eventDao.findMatching(crit));
             if (result.isEmpty()) {         //result set is empty
                 return Response.noContent().build();
@@ -97,20 +97,14 @@ public class EventResource {
         /**
          * implemented abstract method from QueryDecoder class
          * in order to create the appropriate criteria object
-         * @throws Exception 
          * 
          */
-        public Criteria CreateCriteria(String fiqlQuery) throws Exception{
+        protected Criteria CreateCriteria(){
             final CriteriaBuilder builder = new CriteriaBuilder(OnmsEvent.class);
             
             builder.orderBy("eventTime").asc();
             
             final Criteria crit = builder.toCriteria();
-            
-            final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
-            Restriction restriction = removeBrackets(fiqlQuery);
-            restrictions.add(restriction);
-            crit.setRestrictions(restrictions);
             
             return crit;
         }

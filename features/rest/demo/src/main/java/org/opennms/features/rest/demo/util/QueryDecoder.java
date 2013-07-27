@@ -11,15 +11,29 @@ import org.opennms.features.rest.demo.exception.NotFIQLOperatorException;
 public abstract class QueryDecoder {
 
     /**
+     * Application of template pattern to query decoder algorithm
+     * main algorithmic flow to convert a given FIQL string to a matching criteria object
+     * @param fiqlQuery
+     * @return
+     * @throws Exception
+     */
+    public Criteria FIQLtoCriteria(String fiqlQuery) throws Exception{
+        final Criteria crit = CreateCriteria();
+        
+        final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
+        Restriction restriction = removeBrackets(fiqlQuery);
+        restrictions.add(restriction);
+        crit.setRestrictions(restrictions);
+        
+        return crit;
+    }
+    /**
      * Extended class should implement this method in order to
      * create criteria object for a given FIQL query
      * 
-     * @param fiqlQuery
      * @return
-     * @throws NotFIQLOperatorException
-     * @throws Exception 
      */
-    public abstract Criteria CreateCriteria(String fiqlQuery) throws NotFIQLOperatorException, Exception;
+    protected abstract Criteria CreateCriteria();
     
     /**
      * create a Restriction object out of the queries containing brackets

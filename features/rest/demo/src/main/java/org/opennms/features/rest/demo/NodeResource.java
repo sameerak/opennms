@@ -207,7 +207,7 @@ public class NodeResource{
     public Response searchNodes(@QueryParam("_s") String queryString) {
         try{
             NodeQueryDecoder nqd = new NodeQueryDecoder();
-            Criteria crit = nqd.CreateCriteria(queryString);
+            Criteria crit = nqd.FIQLtoCriteria(queryString);
             OnmsNodeList result = new OnmsNodeList(nodeDao.findMatching(crit));
             if (result.isEmpty()) {         //result set is empty
                 return Response.noContent().build();
@@ -235,10 +235,9 @@ public class NodeResource{
         /**
          * implemented abstract method from QueryDecoder class
          * in order to create the appropriate criteria object
-         * @throws Exception 
          * 
          */
-        public Criteria CreateCriteria(String fiqlQuery) throws Exception{
+        protected Criteria CreateCriteria(){
             final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
             builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
             builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
@@ -247,11 +246,6 @@ public class NodeResource{
             builder.orderBy("label").asc();
             
             final Criteria crit = builder.toCriteria();
-            
-            final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
-            Restriction restriction = removeBrackets(fiqlQuery);
-            restrictions.add(restriction);
-            crit.setRestrictions(restrictions);
             
             return crit;
         }
