@@ -29,6 +29,7 @@ import org.opennms.netmgt.model.OnmsNode;
 import org.opennms.netmgt.model.OnmsNodeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.orm.hibernate3.HibernateQueryException;
 
 @Path("/nodes")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -218,6 +219,9 @@ public class NodeResource{
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
         catch(ParseException e){    //in a case where user has provided data in wrong format
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
+        }
+        catch(HibernateQueryException e){    //in a case where user has requested a non existing data type
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
         catch(Exception e){

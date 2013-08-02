@@ -3,7 +3,6 @@ package org.opennms.features.rest.demo;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +17,6 @@ import javax.ws.rs.core.Response;
 
 import org.opennms.core.criteria.Criteria;
 import org.opennms.core.criteria.CriteriaBuilder;
-import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.features.rest.demo.exception.NotFIQLOperatorException;
 import org.opennms.features.rest.demo.util.QueryDecoder;
 import org.opennms.netmgt.dao.EventDao;
@@ -28,6 +26,7 @@ import org.opennms.netmgt.model.OnmsEvent;
 import org.opennms.netmgt.model.OnmsEventCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.orm.hibernate3.HibernateQueryException;
 
 @Path("/events")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -64,6 +63,9 @@ public class EventResource {
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
         catch(ParseException e){    //in a case where user has provided data in wrong format
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
+        }
+        catch(HibernateQueryException e){    //in a case where user has requested a non existing data type
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
         catch(Exception e){
