@@ -49,7 +49,7 @@ public class EventResource {
 
     @GET
     @Path("/search")
-    public Response searchNodes(@QueryParam("_s") String queryString) {
+    public Response searchEvents(@QueryParam("_s") String queryString) {
         try{
             QueryDecoder eqd = new EventQueryDecoder();
             Criteria crit = eqd.FIQLtoCriteria(queryString);
