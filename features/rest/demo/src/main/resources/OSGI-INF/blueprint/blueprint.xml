@@ -17,6 +17,8 @@
     <reference id="nodeDao" interface="org.opennms.netmgt.dao.NodeDao" />
     <reference id="eventDao" interface="org.opennms.netmgt.dao.EventDao" />
     <reference id="alarmDao" interface="org.opennms.netmgt.dao.AlarmDao" />
+    <reference id="outageDao" interface="org.opennms.netmgt.dao.OutageDao" />
+    <reference id="notificationDao" interface="org.opennms.netmgt.dao.NotificationDao" />
     <reference id="categoryDao" interface="org.opennms.netmgt.dao.CategoryDao" />
     
     <bean id="nodeResource" class="org.opennms.features.rest.demo.NodeResource">
@@ -33,6 +35,14 @@
         <property name="alarmDao" ref="alarmDao" /> 
     </bean>
     
+    <bean id="outageResource" class="org.opennms.features.rest.demo.OutageResource">
+        <property name="outageDao" ref="outageDao" /> 
+    </bean>
+    
+    <bean id="notificationResource" class="org.opennms.features.rest.demo.NotificationResource">
+        <property name="notificationDao" ref="notificationDao" /> 
+    </bean>
+    
     <cxf:bus id="restBus">
         <cxf:features>
             <cxf:logging/>
@@ -44,6 +54,8 @@
             <ref component-id="nodeResource" />
             <ref component-id="eventResource" />
             <ref component-id="alarmResource" />
+            <ref component-id="outageResource" />
+            <ref component-id="notificationResource" />
         </jaxrs:serviceBeans>
     </jaxrs:server>
   
