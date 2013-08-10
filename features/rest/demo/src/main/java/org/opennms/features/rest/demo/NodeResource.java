@@ -82,6 +82,51 @@ public class NodeResource{
         }
         return Response.ok().entity(result).build();
     }
+
+    @GET
+    @Path("{nodeId}/ipinterfaces")
+    public Response getNodeIPInterfaces(@PathParam("nodeId") final String nodeId) {
+        Set<OnmsIpInterface> result = nodeDao.get(nodeId).getIpInterfaces();
+        if (result == null) {
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid node ID").build();
+        }
+        OnmsIpInterface[] resultArray = new OnmsIpInterface[result.size()];
+        result.toArray(resultArray);
+        return Response.ok().entity(resultArray).build();
+    }
+
+    @GET
+    @Path("{nodeId}/ipinterfaces/{ipAddress}")
+    public Response getNodeIPInterfacesByIPAddress(@PathParam("nodeId") final String nodeId, @PathParam("ipAddress") final String ipAddress) {
+        OnmsIpInterface result = nodeDao.get(nodeId).getIpInterfaceByIpAddress(ipAddress);
+        if (result == null) {
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid node ID").build();
+        }
+        return Response.ok().entity(result).build();
+    }
+    
+    @GET
+    @Path("{nodeId}/ipinterfaces/{ipAddress}/services")
+    public Response getNodeServicesByIPAddress(@PathParam("nodeId") final String nodeId, @PathParam("ipAddress") final String ipAddress) {
+        Set<OnmsMonitoredService> result = nodeDao.get(nodeId).getIpInterfaceByIpAddress(ipAddress).getMonitoredServices();
+        if (result == null) {
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid node ID").build();
+        }
+        OnmsIpInterface[] resultArray = new OnmsIpInterface[result.size()];
+        result.toArray(resultArray);
+        return Response.ok().entity(resultArray).build();
+    }
+    
+    @GET
+    @Path("{nodeId}/ipinterfaces/{ipAddress}/services/{serviceName}")
+    public Response getNodeServiceByIPAddressByServiceName(@PathParam("nodeId") final String nodeId, @PathParam("ipAddress") final String ipAddress, 
+            @PathParam("serviceName") final String serviceName) {
+        OnmsMonitoredService result = nodeDao.get(nodeId).getIpInterfaceByIpAddress(ipAddress).getMonitoredServiceByServiceType(serviceName);
+        if (result == null) {
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity("Please specify a valid node ID").build();
+        }
+        return Response.ok().entity(result).build();
+    }
     
     /**
      * method to get nodes belonging to several specified categories
