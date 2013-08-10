@@ -54,15 +54,33 @@ public class NotificationResource {
     
     @GET
     @Path("/search")
-    public Response searchNotifications(@QueryParam("_s") String queryString) {
-        try{
-            QueryDecoder nqd = new NotificationQueryDecoder();
-            Criteria crit = nqd.FIQLtoCriteria(queryString);
-            OnmsNotificationCollection result = new OnmsNotificationCollection(notificationDao.findMatching(crit));
-            if (result.isEmpty()) {         //result set is empty
-                return Response.noContent().build();
-            }
-            return Response.ok().entity(result).build();
+    public Response searchNotifications(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
+            @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
+        QueryDecoder nqd = new NotificationQueryDecoder();
+
+        if (queryString == null) {
+            queryString = "";
+        }
+        
+        if (limit == null) {
+            limit = "10";
+        }
+
+        if (offset == null) {
+            offset = "0";
+        }
+        
+        if (orderBy == null) {
+            orderBy = "notifyId";
+        } 
+        
+        if (order == null) {
+            order = "asc";
+        } 
+             
+        Criteria crit;
+        try{ 
+            crit = nqd.FIQLtoCriteria(queryString, Integer.parseInt(limit), Integer.parseInt(offset), orderBy, order);
         }
         catch(NotFIQLOperatorException e){    //in a case where user has specified an invalid FIQL operator
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
@@ -77,6 +95,12 @@ public class NotificationResource {
             logger.error(e.getMessage(), e);    
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
+        
+        OnmsNotificationCollection result = new OnmsNotificationCollection(notificationDao.findMatching(crit));
+        if (result.isEmpty()) {         //result set is empty
+            return Response.noContent().build();
+        }
+        return Response.ok().entity(result).build();
     }
     
     /**
@@ -90,14 +114,12 @@ public class NotificationResource {
          * in order to create the appropriate criteria object
          * 
          */
-        protected Criteria CreateCriteria(){
+        protected CriteriaBuilder CreateCriteriaBuilder(){
             final CriteriaBuilder builder = new CriteriaBuilder(OnmsNotification.class);
             
             builder.orderBy("notifyId").desc();
             
-            final Criteria crit = builder.toCriteria();
-            
-            return crit;
+            return builder;
         }
         
         /**
