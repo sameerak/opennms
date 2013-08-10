@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,6 +27,8 @@ import org.opennms.features.rest.demo.util.QueryDecoder;
 import org.opennms.netmgt.dao.NodeDao;
 import org.opennms.netmgt.dao.CategoryDao;
 import org.opennms.netmgt.model.OnmsCategory;
+import org.opennms.netmgt.model.OnmsIpInterface;
+import org.opennms.netmgt.model.OnmsMonitoredService;
 import org.opennms.netmgt.model.OnmsNode;
 import org.opennms.netmgt.model.OnmsNodeList;
 import org.slf4j.Logger;
@@ -78,7 +82,7 @@ public class NodeResource{
         }
         return Response.ok().entity(result).build();
     }
-
+    
     /**
      * method to get nodes belonging to several specified categories
      * categories are specified as an array of strings
@@ -205,15 +209,33 @@ public class NodeResource{
      */
     @GET
     @Path("/search")
-    public Response searchNodes(@QueryParam("_s") String queryString) {
+    public Response searchNodes(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
+            @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
+        NodeQueryDecoder nqd = new NodeQueryDecoder();
+        
+        if (queryString == null) {
+            queryString = "";
+        }
+        
+        if (limit == null) {
+            limit = "10";
+        }
+
+        if (offset == null) {
+            offset = "0";
+        }
+        
+        if (orderBy == null) {
+            orderBy = "label";
+        } 
+        
+        if (order == null) {
+            order = "asc";
+        } 
+        
+        Criteria crit;
         try{
-            NodeQueryDecoder nqd = new NodeQueryDecoder();
-            Criteria crit = nqd.FIQLtoCriteria(queryString);
-            OnmsNodeList result = new OnmsNodeList(nodeDao.findMatching(crit));
-            if (result.isEmpty()) {         //result set is empty
-                return Response.noContent().build();
-            }
-            return Response.ok().entity(result).build();
+            crit = nqd.FIQLtoCriteria(queryString, Integer.parseInt(limit), Integer.parseInt(offset), orderBy, order);
         }
         catch(NotFIQLOperatorException e){    //in a case where user has specified an invalid FIQL operator
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
@@ -228,6 +250,12 @@ public class NodeResource{
             logger.error(e.getMessage(), e);    
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
+        
+        OnmsNodeList result = new OnmsNodeList(nodeDao.findMatching(crit));
+        if (result.isEmpty()) {         //result set is empty
+            return Response.noContent().build();
+        }
+        return Response.ok().entity(result).build();
     }
     
     /**
@@ -241,7 +269,7 @@ public class NodeResource{
          * in order to create the appropriate criteria object
          * 
          */
-        protected Criteria CreateCriteria(){
+        protected CriteriaBuilder CreateCriteriaBuilder() {
             final CriteriaBuilder builder = new CriteriaBuilder(OnmsNode.class);
             builder.alias("snmpInterfaces", "snmpInterface", JoinType.LEFT_JOIN);
             builder.alias("ipInterfaces", "ipInterface", JoinType.LEFT_JOIN);
@@ -249,9 +277,7 @@ public class NodeResource{
     
             builder.orderBy("label").asc();
             
-            final Criteria crit = builder.toCriteria();
-            
-            return crit;
+            return builder;
         }
         
         /**
@@ -289,6 +315,7 @@ public class NodeResource{
             }
             return compareValue;
         }
+
     }//end of inner class
     
     /**
