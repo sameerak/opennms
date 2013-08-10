@@ -46,15 +46,33 @@ public class AlarmResource {
 
     @GET
     @Path("/search")
-    public Response searchAlarms(@QueryParam("_s") String queryString) {
+    public Response searchAlarms(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
+            @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
+        QueryDecoder aqd = new AlarmQueryDecoder();
+        
+        if (queryString == null) {
+            queryString = "";
+        }
+        
+        if (limit == null) {
+            limit = "10";
+        }
+
+        if (offset == null) {
+            offset = "0";
+        }
+        
+        if (orderBy == null) {
+            orderBy = "lastEventTime";
+        } 
+        
+        if (order == null) {
+            order = "asc";
+        } 
+        
+        Criteria crit;
         try{
-            QueryDecoder aqd = new AlarmQueryDecoder();
-            Criteria crit = aqd.FIQLtoCriteria(queryString);
-            OnmsAlarmCollection result = new OnmsAlarmCollection(alarmDao.findMatching(crit));
-            if (result.isEmpty()) {         //result set is empty
-                return Response.noContent().build();
-            }
-            return Response.ok().entity(result).build();
+            crit = aqd.FIQLtoCriteria(queryString, Integer.parseInt(limit), Integer.parseInt(offset), orderBy, order);
         }
         catch(NotFIQLOperatorException e){    //in a case where user has specified an invalid FIQL operator
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
@@ -69,6 +87,12 @@ public class AlarmResource {
             logger.error(e.getMessage(), e);    
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
+        
+        OnmsAlarmCollection result = new OnmsAlarmCollection(alarmDao.findMatching(crit));
+        if (result.isEmpty()) {         //result set is empty
+            return Response.noContent().build();
+        }
+        return Response.ok().entity(result).build();
     }
 
     /**
@@ -90,15 +114,13 @@ public class AlarmResource {
          * in order to create the appropriate criteria object
          * 
          */
-        protected Criteria CreateCriteria(){
+        protected CriteriaBuilder CreateCriteriaBuilder(){
             final CriteriaBuilder builder = new CriteriaBuilder(OnmsAlarm.class);
             
             builder.orderBy("lastEventTime").desc();
             builder.orderBy("id").desc();
             
-            final Criteria crit = builder.toCriteria();
-            
-            return crit;
+            return builder;
         }
         
         /**
