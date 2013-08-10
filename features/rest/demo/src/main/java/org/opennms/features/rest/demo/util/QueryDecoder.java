@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opennms.core.criteria.Criteria;
+import org.opennms.core.criteria.CriteriaBuilder;
 import org.opennms.core.criteria.restrictions.Restriction;
 import org.opennms.core.criteria.restrictions.Restrictions;
 import org.opennms.features.rest.demo.exception.MergeException;
@@ -19,9 +20,26 @@ public abstract class QueryDecoder {
      * @return
      * @throws Exception
      */
-    public Criteria FIQLtoCriteria(String fiqlQuery) throws Exception{
-        final Criteria crit = CreateCriteria();
+    public Criteria FIQLtoCriteria(String fiqlQuery, int limit, int offset, String orderBy, String order) throws Exception{
+        final CriteriaBuilder builder = CreateCriteriaBuilder();
         
+        if (!orderBy.equals("")) {
+            builder.clearOrder();
+            if (order.equals("desc")) {
+                builder.orderBy(orderBy).desc();
+            } else {
+                builder.orderBy(orderBy).asc();
+            }
+        }
+                
+        final Criteria crit = builder.toCriteria();
+        
+        crit.setLimit(limit);
+        crit.setOffset(offset);
+        
+        if (fiqlQuery.equals("")) {
+            return crit;
+        }
         final List<Restriction> restrictions = new ArrayList<Restriction>(crit.getRestrictions());
         Restriction restriction = removeBrackets(fiqlQuery);
         restrictions.add(restriction);
@@ -31,11 +49,11 @@ public abstract class QueryDecoder {
     }
     /**
      * Extended class should implement this method in order to
-     * create criteria object for a given FIQL query
+     * create criteriaBuilder object for a given data type to be queried
      * 
      * @return
      */
-    protected abstract Criteria CreateCriteria();
+    protected abstract CriteriaBuilder CreateCriteriaBuilder();
     
     /**
      * create a Restriction object out of the queries containing brackets
