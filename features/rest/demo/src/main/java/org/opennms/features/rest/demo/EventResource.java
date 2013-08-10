@@ -49,15 +49,33 @@ public class EventResource {
 
     @GET
     @Path("/search")
-    public Response searchEvents(@QueryParam("_s") String queryString) {
+    public Response searchEvents(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
+            @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
+        QueryDecoder eqd = new EventQueryDecoder();
+        
+        if (queryString == null) {
+            queryString = "";
+        }
+        
+        if (limit == null) {
+            limit = "10";
+        }
+
+        if (offset == null) {
+            offset = "0";
+        }
+        
+        if (orderBy == null) {
+            orderBy = "eventTime";
+        } 
+        
+        if (order == null) {
+            order = "asc";
+        } 
+        
+        Criteria crit;
         try{
-            QueryDecoder eqd = new EventQueryDecoder();
-            Criteria crit = eqd.FIQLtoCriteria(queryString);
-            OnmsEventCollection result = new OnmsEventCollection(eventDao.findMatching(crit));
-            if (result.isEmpty()) {         //result set is empty
-                return Response.noContent().build();
-            }
-            return Response.ok().entity(result).build();
+            crit = eqd.FIQLtoCriteria(queryString, Integer.parseInt(limit), Integer.parseInt(offset), orderBy, order);
         }
         catch(NotFIQLOperatorException e){    //in a case where user has specified an invalid FIQL operator
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
@@ -72,6 +90,12 @@ public class EventResource {
             logger.error(e.getMessage(), e);    
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
+        
+        OnmsEventCollection result = new OnmsEventCollection(eventDao.findMatching(crit));
+        if (result.isEmpty()) {         //result set is empty
+            return Response.noContent().build();
+        }
+        return Response.ok().entity(result).build();
     }
 
     /**
@@ -101,14 +125,12 @@ public class EventResource {
          * in order to create the appropriate criteria object
          * 
          */
-        protected Criteria CreateCriteria(){
+        protected CriteriaBuilder CreateCriteriaBuilder(){
             final CriteriaBuilder builder = new CriteriaBuilder(OnmsEvent.class);
             
             builder.orderBy("eventTime").asc();
             
-            final Criteria crit = builder.toCriteria();
-            
-            return crit;
+            return builder;
         }
         
         /**
