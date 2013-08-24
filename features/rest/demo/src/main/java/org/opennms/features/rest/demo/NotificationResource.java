@@ -88,6 +88,19 @@ public class NotificationResource {
         catch(ParseException e){    //in a case where user has provided data in wrong format
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
+        catch(NumberFormatException e){    //in a case where user has provided wrong data for query params
+            return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
+        }
+        catch(Exception e){
+            logger.error(e.getMessage(), e);    
+            return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
+        }
+        
+        OnmsNotificationCollection result;
+        
+        try{         
+            result = new OnmsNotificationCollection(notificationDao.findMatching(crit));  
+        }
         catch(HibernateQueryException e){    //in a case where user has requested a non existing data type
             return Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   
         }
@@ -96,7 +109,6 @@ public class NotificationResource {
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of an unidentified error caused
         }
         
-        OnmsNotificationCollection result = new OnmsNotificationCollection(notificationDao.findMatching(crit));
         if (result.isEmpty()) {         //result set is empty
             return Response.noContent().build();
         }
