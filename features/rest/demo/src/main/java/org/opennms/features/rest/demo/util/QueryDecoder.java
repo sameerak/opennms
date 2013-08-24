@@ -255,16 +255,28 @@ public abstract class QueryDecoder {
                 
         if (componentStrings.length == 2 && componentStrings[0].endsWith("!")) {//case "!="
             String propertyName = componentStrings[0].substring(0, componentStrings[0].length() - 1);
+            if ("null".equalsIgnoreCase(componentStrings[1])) {
+                return Restrictions.isNotNull(propertyName);
+            } else if ("notNull".equalsIgnoreCase(componentStrings[1])) {
+                return Restrictions.isNull(propertyName);
+            }
             Object compareWith = getCompareObject(propertyName, componentStrings[1]);
             return Restrictions.ne(propertyName, compareWith);
         } 
         else if (componentStrings.length == 3) {
-            Object compareWith = getCompareObject(componentStrings[0], componentStrings[2]);
             
             if (componentStrings[1].equals("")) {//case "=="
+                if ("null".equalsIgnoreCase(componentStrings[2])) {
+                    return Restrictions.isNull(componentStrings[0]);
+                } else if ("notNull".equalsIgnoreCase(componentStrings[2])) {
+                    return Restrictions.isNotNull(componentStrings[0]);
+                }
+                Object compareWith = getCompareObject(componentStrings[0], componentStrings[2]);
                 return Restrictions.eq(componentStrings[0], compareWith); 
-            } 
-            else if (componentStrings[1].equals("lt")) {//case "=lt="
+            }
+            
+            Object compareWith = getCompareObject(componentStrings[0], componentStrings[2]);
+            if (componentStrings[1].equals("lt")) {//case "=lt="
                 return Restrictions.lt(componentStrings[0], compareWith); 
             } 
             else if (componentStrings[1].equals("le")) {//case "=le="
