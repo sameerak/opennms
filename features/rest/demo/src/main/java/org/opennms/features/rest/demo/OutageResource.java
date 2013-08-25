@@ -33,7 +33,6 @@ public class OutageResource {
     private OutageDao outageDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
-    @GET
     public List<OnmsOutage> getOutages() {
         return outageDao.findAll();
     }
@@ -53,7 +52,6 @@ public class OutageResource {
     }
     
     @GET
-    @Path("/search")
     public Response searchOutages(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
             QueryDecoder oqd = new OutageQueryDecoder();

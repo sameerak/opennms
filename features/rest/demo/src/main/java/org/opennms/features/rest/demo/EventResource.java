@@ -36,7 +36,6 @@ public class EventResource {
     private EventDao eventDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
-    @GET
     public List<OnmsEvent> getEvents() {
         return eventDao.findAll();
     }
@@ -48,7 +47,6 @@ public class EventResource {
     }
 
     @GET
-    @Path("/search")
     public Response searchEvents(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
         QueryDecoder eqd = new EventQueryDecoder();

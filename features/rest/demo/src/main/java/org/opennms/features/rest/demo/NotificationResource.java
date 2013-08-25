@@ -33,7 +33,6 @@ public class NotificationResource {
     private NotificationDao notificationDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
-    @GET
     public List<OnmsNotification> getNotifications() {
         return notificationDao.findAll();
     }
@@ -53,7 +52,6 @@ public class NotificationResource {
     }
     
     @GET
-    @Path("/search")
     public Response searchNotifications(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
         QueryDecoder nqd = new NotificationQueryDecoder();

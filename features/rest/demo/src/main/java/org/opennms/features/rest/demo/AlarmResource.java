@@ -33,7 +33,6 @@ public class AlarmResource {
     private AlarmDao alarmDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
-    @GET
     public List<OnmsAlarm> getAlarms() {
         return alarmDao.findAll();
     }
@@ -45,7 +44,6 @@ public class AlarmResource {
     }
 
     @GET
-    @Path("/search")
     public Response searchAlarms(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
         QueryDecoder aqd = new AlarmQueryDecoder();

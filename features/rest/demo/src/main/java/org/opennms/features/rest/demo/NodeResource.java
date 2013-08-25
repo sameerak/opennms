@@ -63,7 +63,6 @@ public class NodeResource{
      * get a list of all the nodes present in the system
      * @return List<OnmsNode>
      */
-    @GET
     public List<OnmsNode> getNodes() {
         return nodeDao.findAll();
     }
@@ -253,7 +252,6 @@ public class NodeResource{
      * @return
      */
     @GET
-    @Path("/search")
     public Response searchNodes(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
         NodeQueryDecoder nqd = new NodeQueryDecoder();
