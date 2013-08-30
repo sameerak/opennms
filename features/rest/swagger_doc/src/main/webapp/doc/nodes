@@ -1,0 +1,49 @@
+{
+	"apiVersion":"0.2",
+	"swaggerVersion":"1.1",
+	"basePath":"http://localhost:8980/opennms/rest2",
+	"resourcePath":"/resources","apis":[
+		{
+			"path":"/nodes/{nodeID}",
+			"description":"Fetches all the resources in the registry",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAllNodes",
+					"responseClass":"List[Node]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "nodeID",
+							"description": "ID of node that needs to be fetched",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						} 
+					],
+					
+					"summary":"Getting details about nodes",
+					"notes": "When called without setting node ID parameter retreives details about all the nodes. With provided node ID retrives details about only that node."
+				}
+			]
+		}
+	],
+	"models":
+		{
+			"Node":
+				{
+					"properties":
+						{
+							"UUID":
+								{
+									"type":"string"
+								},
+							"path":
+								{
+									"type":"string"
+								}
+						},
+					"id":"Resource"
+				}
+		}
+}
