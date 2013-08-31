@@ -1,7 +1,7 @@
 {
 	"apiVersion":"0.2",
 	"swaggerVersion":"1.1",
-	"basePath":"http://localhost:8980/swagger/doc",
+	"basePath":"http://localhost:8980/swagger_doc/doc",
 	"apis":[
 		{
 			"path":"/nodes",

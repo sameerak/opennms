@@ -2,10 +2,12 @@
 	"apiVersion":"0.2",
 	"swaggerVersion":"1.1",
 	"basePath":"http://localhost:8980/opennms/rest2",
-	"resourcePath":"/resources","apis":[
+	"resourcePath":"/resources",
+	"produces":["application/json","application/xml"],
+	"apis":[
 		{
-			"path":"/nodes/{nodeID}",
-			"description":"Fetches all the resources in the registry",
+			"path":"/nodes",
+			"description":"Fetches all the nodes in the OpenNMS",
 			"operations":[
 				{
 					"httpMethod":"GET",
@@ -13,11 +15,67 @@
 					"responseClass":"List[Node]",
 					"parameters":[
 						{
+							"paramType": "query",
+							"name": "_s",
+							"description": "FIQL string to search node data",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "limit",
+							"description": "position to start the data retrieval",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "offset",
+							"description": "number of node elements to be returned to as the response",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "orderBy",
+							"description": "element name to be used to order node elements",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "order",
+							"description": "\"asc\" to order node data in ascending order or \"desc\" for descending order",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}
+					],
+					
+					"summary":"Getting details about nodes",
+					"notes": "When called without setting any query parameter retreives details about all the nodes."
+				}
+			]
+		},
+		{
+			"path":"/nodes/{nodeID}",
+			"description":"Fetches all the resources in the registry",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAspecificNode",
+					"responseClass":"List[Node]",
+					"parameters":[
+						{
 							"paramType": "path",
 							"name": "nodeID",
 							"description": "ID of node that needs to be fetched",
 							"dataType": "String",
-							"required": false,
+							"required": true,
 							"allowMultiple": false
 						} 
 					],
@@ -27,23 +85,79 @@
 				}
 			]
 		}
+		
 	],
 	"models":
 		{
-			"Node":
+			
+			"AssetRecord":
 				{
-					"properties":
-						{
-							"UUID":
+					"id":"AssetRecord",
+					"properties": {
+      "building":
 								{
 									"type":"string"
 								},
-							"path":
+      "category":
 								{
 									"type":"string"
+								},
+      "lastModifiedBy":
+								{
+									"type":"string"
+								},
+      "lastModifiedDate":
+								{
+									"type":"DateTime"
+								},
+      "node":
+								{
+									"type":"integer"
 								}
-						},
-					"id":"Resource"
+							}
+				},
+"Node":
+				{
+					"id":"Node",
+					"properties":
+						{
+							"foreignId":
+								{
+									"type":"long"
+								},
+    "foreignSource": 
+								{
+									"type":"string"
+								},
+    "label":
+								{
+									"type":"string"
+								},
+    "id":
+								{
+									"type":"integer"
+								},
+    "type": 
+								{
+									"type":"string"
+								},
+    "assetRecord":
+								{"type":"array","items":{
+									"$ref":"AssetRecord"}
+								},
+    "createTime": 
+								{
+									"type":"DateTime"
+								},
+    "labelSource": 
+								{
+									"type":"string"
+								},
+    "lastCapsdPoll":
+								{
+									"type":"DateTime"
+								}
+						}
 				}
+    }
 		}
-}
