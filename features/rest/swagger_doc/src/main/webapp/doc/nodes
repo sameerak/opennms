@@ -26,7 +26,7 @@
 							"paramType": "query",
 							"name": "limit",
 							"description": "position to start the data retrieval",
-							"dataType": "String",
+							"dataType": "integer",
 							"required": false,
 							"allowMultiple": false
 						}, 
@@ -34,7 +34,7 @@
 							"paramType": "query",
 							"name": "offset",
 							"description": "number of node elements to be returned to as the response",
-							"dataType": "String",
+							"dataType": "integer",
 							"required": false,
 							"allowMultiple": false
 						}, 
@@ -57,13 +57,13 @@
 					],
 					
 					"summary":"Getting details about nodes",
-					"notes": "When called without setting any query parameter retreives details about all the nodes."
+					"notes": "When called without setting any query parameters retreives details about all the nodes in paginated form. User can specify FIQL query string to query node data. For dates format \"yyyy-MM-ddTHH:mm:ss\" should be used. For the creation of criteria objects logical AND (\";\") operator was given priority over logical OR (\",\") operator. Pagination is enabled on search results, so following instructions in \"http://www.opennms.org/wiki/New_REST_API/User_Documentation#Using_pagination_on_requests\" you can manipulate paginated results."
 				}
 			]
 		},
 		{
 			"path":"/nodes/{nodeID}",
-			"description":"Fetches all the resources in the registry",
+			"description":"Fetches a specific node in the OpenNMS server",
 			"operations":[
 				{
 					"httpMethod":"GET",
@@ -74,18 +74,89 @@
 							"paramType": "path",
 							"name": "nodeID",
 							"description": "ID of node that needs to be fetched",
-							"dataType": "String",
+							"dataType": "integer",
 							"required": true,
 							"allowMultiple": false
 						} 
 					],
 					
-					"summary":"Getting details about nodes",
-					"notes": "When called without setting node ID parameter retreives details about all the nodes. With provided node ID retrives details about only that node."
+					"summary":"Getting details about a specific node",
+					"notes": "When called with node ID in the path, retrives details about only that node."
 				}
 			]
-		}
-		
+		},
+		{
+			"path":"/nodes/categories",
+			"description":"Fetches all the nodes belong to a set of category",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getNodesByCategory",
+					"responseClass":"List[Node]",
+					"parameters":[
+						{
+							"paramType": "query",
+							"name": "q",
+							"description": "name of a category",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": true
+						}
+					],
+					
+					"summary":"Getting nodes based on a set of categories",
+					"notes": "Fetches all the nodes belong to the given category set. Available categories are Routers, Switches, Servers, Production, Test, Development. Category set should be specified as ?q={cat_1}&q={cat_2}"
+				}
+			]
+		},
+		{
+			"path":"/nodes/categories/{category}",
+			"description":"Fetches all the nodes belong to the specified category",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getNodesByCategory",
+					"responseClass":"List[Node]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "category",
+							"description": "name of the category",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						} 
+					],
+					
+					"summary":"Getting nodes based on a specific category",
+					"notes": "Fetches all the nodes belong to the specified category. Available categories are Routers, Switches, Servers, Production, Test, Development."
+				}
+			]
+		},
+		{
+			"path":"/nodes/foreignSource/{foreignSource}",
+			"description":"Fetches all the nodes belong to the specified foreign source",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getNodesByForeignSource",
+					"responseClass":"List[Node]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "foreignSource",
+							"description": "name of the foreign source",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						} 
+					],
+					
+					"summary":"Getting nodes based on a specific foreign source",
+					"notes": "Fetches all the nodes belong to the specified foreign source."
+				}
+			]
+		}		
 	],
 	"models":
 		{
@@ -142,8 +213,8 @@
 									"type":"string"
 								},
     "assetRecord":
-								{"type":"array","items":{
-									"$ref":"AssetRecord"}
+								{
+    	"$ref":"AssetRecord"
 								},
     "createTime": 
 								{
