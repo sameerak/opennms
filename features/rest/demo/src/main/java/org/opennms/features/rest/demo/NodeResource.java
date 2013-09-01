@@ -165,8 +165,8 @@ public class NodeResource{
                 if (result.isEmpty()) {                                         //result set is empty
                     return Response.noContent().build();
                 }
-                OnmsNode[] resultArray = new OnmsNode[result.size()];
-                return Response.ok().entity(result.toArray(resultArray)).build();
+                OnmsNodeList resultNodeList = new OnmsNodeList(result);
+                return Response.ok().entity(resultNodeList).build();
             }
         }catch(Exception e){    
             logger.error(e.getMessage(), e);
@@ -196,8 +196,8 @@ public class NodeResource{
             if (result.isEmpty()) {                                         //result set is empty
                 return Response.noContent().build();
             }
-            OnmsNode[] resultArray = new OnmsNode[result.size()];
-            return Response.ok().entity(result.toArray(resultArray)).build();
+            OnmsNodeList resultNodeList = new OnmsNodeList(result);
+            return Response.ok().entity(resultNodeList).build();
         }catch(Exception e){  
             logger.error(e.getMessage(), e);  
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of a unidentified error caused
@@ -231,8 +231,8 @@ public class NodeResource{
             if (result.isEmpty()) {                                         //result set is empty
                 return Response.noContent().build();
             }
-            OnmsNode[] resultArray = new OnmsNode[result.size()];
-            return Response.ok().entity(result.toArray(resultArray)).build();
+            OnmsNodeList resultNodeList = new OnmsNodeList(result);
+            return Response.ok().entity(resultNodeList).build();
         }catch(Exception e){
             logger.error(e.getMessage(), e);
             return Response.serverError().type(MediaType.TEXT_PLAIN).entity(e.getMessage()).build();   //in case of a unidentified error caused
