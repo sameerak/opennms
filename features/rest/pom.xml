@@ -21,6 +21,7 @@
   </properties>
   <modules>
     <module>demo</module>
+    <module>swagger_doc</module>
     <module>core</module>
     <module>addon</module>
   </modules>
