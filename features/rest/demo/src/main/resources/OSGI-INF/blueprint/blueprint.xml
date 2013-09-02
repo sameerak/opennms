@@ -20,7 +20,8 @@
     <reference id="outageDao" interface="org.opennms.netmgt.dao.OutageDao" />
     <reference id="notificationDao" interface="org.opennms.netmgt.dao.NotificationDao" />
     <reference id="categoryDao" interface="org.opennms.netmgt.dao.CategoryDao" />
-    
+    <reference id="acknowledgmentDao" interface="org.opennms.netmgt.dao.AcknowledgmentDao" />
+        
     <bean id="nodeResource" class="org.opennms.features.rest.demo.NodeResource">
         <property name="nodeDao" ref="nodeDao" />
         <property name="categoryDao" ref="categoryDao" />
@@ -32,7 +33,8 @@
     </bean>
 
     <bean id="alarmResource" class="org.opennms.features.rest.demo.AlarmResource">
-        <property name="alarmDao" ref="alarmDao" /> 
+        <property name="acknowledgmentDao" ref="acknowledgmentDao" /> 
+        <property name="alarmDao" ref="alarmDao" />
     </bean>
     
     <bean id="outageResource" class="org.opennms.features.rest.demo.OutageResource">

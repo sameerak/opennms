@@ -7,31 +7,43 @@ import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import org.opennms.core.criteria.Criteria;
 import org.opennms.core.criteria.CriteriaBuilder;
 import org.opennms.features.rest.demo.exception.NotFIQLOperatorException;
 import org.opennms.features.rest.demo.util.QueryDecoder;
+import org.opennms.netmgt.dao.AcknowledgmentDao;
 import org.opennms.netmgt.dao.AlarmDao;
+import org.opennms.netmgt.model.AckAction;
+import org.opennms.netmgt.model.OnmsAcknowledgment;
 import org.opennms.netmgt.model.OnmsAlarm;
 import org.opennms.netmgt.model.OnmsAlarmCollection;
 import org.opennms.netmgt.model.OnmsSeverity;
+//import org.opennms.web.springframework.security.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.orm.hibernate3.HibernateQueryException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Path("/alarms")
 @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 public class AlarmResource {
 
     private AlarmDao alarmDao;
-    private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
+    private AcknowledgmentDao acknowledgmentDao;
+    private static Logger logger = LoggerFactory.getLogger(NodeResource.class);
+    
+    @Context
+    private SecurityContext securityContext; 
 
     public List<OnmsAlarm> getAlarms() {
         return alarmDao.findAll();
@@ -112,6 +124,47 @@ public class AlarmResource {
     public void setAlarmDao(AlarmDao alarmDao) {
         this.alarmDao = alarmDao;
     }
+
+    /**
+     * method to initialize local variable acknowledgmentDao using blueprint
+     * @param acknowledgmentDao
+     */
+    public void setAcknowledgmentDao(AcknowledgmentDao acknowledgmentDao) {
+        this.acknowledgmentDao = acknowledgmentDao;
+    }
+    
+    @PUT
+    @Path("{alarmId}")
+    @Transactional
+    public Response acknowledgeAlarmById(@PathParam("alarmId") final Integer alarmId, @QueryParam("ack") String ack) {
+        OnmsAlarm alarm = alarmDao.get(alarmId);
+        
+        String acknowledgingUser = securityContext.getUserPrincipal().getName();
+        
+        OnmsAcknowledgment acknowledgement = new OnmsAcknowledgment(alarm, acknowledgingUser);
+        
+        if (ack != null) {
+            if (Boolean.parseBoolean(ack)) {
+                acknowledgement.setAckAction(AckAction.ACKNOWLEDGE);
+            } else {
+                acknowledgement.setAckAction(AckAction.UNACKNOWLEDGE);
+            }
+        }
+        try {
+            acknowledgmentDao.processAck(acknowledgement);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return Response.ok().entity(alarmDao.get(alarmId)).build();
+    }
+    
+    /*private void assertUserCredentials(String acknowledgingUser) {
+        final String currentUser = securityContext.getUserPrincipal().getName();
+        if (!(securityContext.isUserInRole(Authentication.ROLE_ADMIN)) && !(acknowledgingUser.equals(currentUser))) {
+            throw new IllegalArgumentException("You are logged in as non-admin user '" + currentUser + "', but you are trying to update an alarm as another user ('" + ackUser + "')!");
+        }
+    }*/
     
     /**
      * inner class to do the query decoding part of the search function 
