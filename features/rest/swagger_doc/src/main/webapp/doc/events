@@ -1,0 +1,171 @@
+{
+	"apiVersion":"0.2",
+	"swaggerVersion":"1.1",
+	"basePath":"http://localhost:8980/opennms/rest2",
+	"resourcePath":"/resources",
+	"produces":["application/json","application/xml"],
+	"apis":[
+		{
+			"path":"/events",
+			"description":"Fetches all the events in the OpenNMS",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAllEvents",
+					"responseClass":"List[Event]",
+					"parameters":[
+						{
+							"paramType": "query",
+							"name": "_s",
+							"description": "FIQL string to search event data",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "limit",
+							"description": "number of node elements to be returned to as the response",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "offset",
+							"description": "position to start the data retrieval",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "orderBy",
+							"description": "attribute name to be used to order event elements",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "order",
+							"description": "\"asc\" to order event data in ascending order or \"desc\" for descending order",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}
+					],
+					"responseMessages":[
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid username supplied"
+						                    },
+						                    {
+						                    	"code":404,
+						                    	"message":"User not found"
+						                    }
+					                   ],
+					"summary":"Getting details about events",
+					"notes": "When called without setting any query parameters retreives details about all the events in paginated form. User can specify FIQL query string to query event data. For dates format \"yyyy-MM-ddTHH:mm:ss\" should be used. For the creation of criteria objects logical AND (\";\") operator was given priority over logical OR (\",\") operator. Pagination is enabled on search results, so following instructions in \"http://www.opennms.org/wiki/New_REST_API/User_Documentation#Using_pagination_on_requests\" you can manipulate paginated results."
+				}
+			]
+		},
+		{
+			"path":"/events/{eventID}",
+			"description":"Fetches a specific event in the OpenNMS server",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAspecificEvent",
+					"responseClass":"List[Event]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "eventID",
+							"description": "ID of event that needs to be fetched",
+							"dataType": "integer",
+							"required": true,
+							"allowMultiple": false
+						} 
+					],
+					
+					"summary":"Getting details about a specific event",
+					"notes": "When called with event ID in the path, retrives details about only that event."
+				}
+			]
+		}		
+	],
+	"models":
+		{
+			
+			"AssetRecord":
+				{
+					"id":"AssetRecord",
+					"properties": {
+      "building":
+								{
+									"type":"string"
+								},
+      "category":
+								{
+									"type":"string"
+								},
+      "lastModifiedBy":
+								{
+									"type":"string"
+								},
+      "lastModifiedDate":
+								{
+									"type":"DateTime"
+								},
+      "node":
+								{
+									"type":"integer"
+								}
+							}
+				},
+"Event":
+				{
+					"id":"Event",
+					"properties":
+						{
+							"foreignId":
+								{
+									"type":"long"
+								},
+    "foreignSource": 
+								{
+									"type":"string"
+								},
+    "label":
+								{
+									"type":"string"
+								},
+    "id":
+								{
+									"type":"integer"
+								},
+    "type": 
+								{
+									"type":"string"
+								},
+    "assetRecord":
+								{
+    	"$ref":"AssetRecord"
+								},
+    "createTime": 
+								{
+									"type":"DateTime"
+								},
+    "labelSource": 
+								{
+									"type":"string"
+								},
+    "lastCapsdPoll":
+								{
+									"type":"DateTime"
+								}
+						}
+				}
+    }
+		}

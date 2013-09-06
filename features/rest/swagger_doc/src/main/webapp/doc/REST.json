@@ -6,6 +6,10 @@
 		{
 			"path":"/nodes",
 			"description":"Operations about all nodes"
+		},
+		{
+			"path":"/events",
+			"description":"Operations about all events"
 		}
 	]
 }
