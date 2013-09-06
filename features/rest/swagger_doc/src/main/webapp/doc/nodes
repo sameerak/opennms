@@ -3,7 +3,7 @@
 	"swaggerVersion":"1.1",
 	"basePath":"http://localhost:8980/opennms/rest2",
 	"resourcePath":"/resources",
-	"produces":["application/json","application/xml"],
+	"produces":["application/xml","application/json"],
 	"apis":[
 		{
 			"path":"/nodes",
@@ -25,14 +25,6 @@
 						{
 							"paramType": "query",
 							"name": "limit",
-							"description": "position to start the data retrieval",
-							"dataType": "integer",
-							"required": false,
-							"allowMultiple": false
-						}, 
-						{
-							"paramType": "query",
-							"name": "offset",
 							"description": "number of node elements to be returned to as the response",
 							"dataType": "integer",
 							"required": false,
@@ -40,8 +32,16 @@
 						}, 
 						{
 							"paramType": "query",
+							"name": "offset",
+							"description": "position to start the data retrieval",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
 							"name": "orderBy",
-							"description": "element name to be used to order node elements",
+							"description": "attribute name to be used to order node elements",
 							"dataType": "String",
 							"required": false,
 							"allowMultiple": false
@@ -55,7 +55,24 @@
 							"allowMultiple": false
 						}
 					],
-					
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid FIQL operator specified"
+					                    },
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid Date format used"
+					                    },
+					                    {
+					                    	"code":400,
+					                    	"message":"non-numerical data provided for parameters limit and offset"
+					                    },
+					                    {
+					                    	"code":400,
+					                    	"message":"data field specified in the query is not available for searching"
+					                    }
+				                   ],
 					"summary":"Getting details about nodes",
 					"notes": "When called without setting any query parameters retreives details about all the nodes in paginated form. User can specify FIQL query string to query node data. For dates format \"yyyy-MM-ddTHH:mm:ss\" should be used. For the creation of criteria objects logical AND (\";\") operator was given priority over logical OR (\",\") operator. Pagination is enabled on search results, so following instructions in \"http://www.opennms.org/wiki/New_REST_API/User_Documentation#Using_pagination_on_requests\" you can manipulate paginated results."
 				}
@@ -79,7 +96,12 @@
 							"allowMultiple": false
 						} 
 					],
-					
+					"responseMessages":[
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid node ID supplied"
+						                    }
+					                   ],					
 					"summary":"Getting details about a specific node",
 					"notes": "When called with node ID in the path, retrives details about only that node."
 				}
@@ -103,9 +125,20 @@
 							"allowMultiple": true
 						}
 					],
+					"produces":["application/xml"],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Not specifying any category"
+					                    },
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid categories specified to search"
+					                    }
+				                   ],
 					
 					"summary":"Getting nodes based on a set of categories",
-					"notes": "Fetches all the nodes belong to the given category set. Available categories are Routers, Switches, Servers, Production, Test, Development. Category set should be specified as ?q={cat_1}&q={cat_2}"
+					"notes": "Fetches all ,the nodes belong to the given category set. Available categories are Routers, Switches, Servers, Production, Test, Development. Category set should be specified as ?q={cat_1}&q={cat_2}"
 				}
 			]
 		},
@@ -127,6 +160,17 @@
 							"allowMultiple": false
 						} 
 					],
+					"produces":["application/xml"],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Not specifying any category"
+					                    },
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid category specified to search"
+					                    }
+				                   ],
 					
 					"summary":"Getting nodes based on a specific category",
 					"notes": "Fetches all the nodes belong to the specified category. Available categories are Routers, Switches, Servers, Production, Test, Development."
@@ -151,6 +195,13 @@
 							"allowMultiple": false
 						} 
 					],
+					"produces":["application/xml"],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Not specifying any foreign source"
+					                    }
+				                   ],
 					
 					"summary":"Getting nodes based on a specific foreign source",
 					"notes": "Fetches all the nodes belong to the specified foreign source."
