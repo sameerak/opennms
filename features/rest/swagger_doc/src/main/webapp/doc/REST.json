@@ -10,6 +10,18 @@
 		{
 			"path":"/events",
 			"description":"Operations about all events"
+		},
+		{
+			"path":"/alarms",
+			"description":"Operations about all alarms"
+		},
+		{
+			"path":"/outages",
+			"description":"Operations about all outages"
+		},
+		{
+			"path":"/notifications",
+			"description":"Operations about all notifications"
 		}
 	]
 }
