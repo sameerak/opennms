@@ -1,0 +1,248 @@
+{
+	"apiVersion":"0.2",
+	"swaggerVersion":"1.1",
+	"basePath":"http://localhost:8980/opennms/rest2",
+	"resourcePath":"/resources",
+	"produces":["application/xml","application/json"],
+	"apis":[
+		{
+			"path":"/outages",
+			"description":"Fetches all the outages in the OpenNMS",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAllOutages",
+					"responseClass":"List[Outage]",
+					"parameters":[
+						{
+							"paramType": "query",
+							"name": "_s",
+							"description": "FIQL string to search outage data",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "limit",
+							"description": "number of outage elements to be returned to as the response",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "offset",
+							"description": "position to start the data retrieval",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "orderBy",
+							"description": "attribute name to be used to order outage elements",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "order",
+							"description": "\"asc\" to order outage data in ascending order or \"desc\" for descending order",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}
+					],
+					"responseMessages":[
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid FIQL operator specified"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid Date format used"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"non-numerical data provided for parameters limit and offset"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"data field specified in the query is not available for searching"
+						                    }
+					                   ],
+					"summary":"Getting details about outages",
+					"notes": "When called without setting any query parameters retreives details about all the outages in paginated form. User can specify FIQL query string to query outage data. For dates format \"yyyy-MM-ddTHH:mm:ss\" should be used. For the creation of criteria objects logical AND (\";\") operator was given priority over logical OR (\",\") operator. Pagination is enabled on search results, so following instructions in \"http://www.opennms.org/wiki/New_REST_API/User_Documentation#Using_pagination_on_requests\" you can manipulate paginated results."
+				}
+			]
+		},
+		{
+			"path":"/outages/{outageID}",
+			"description":"Fetches a specific outage in the OpenNMS server",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAspecificOutage",
+					"responseClass":"List[Outage]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "outageID",
+							"description": "ID of outage that needs to be fetched",
+							"dataType": "integer",
+							"required": true,
+							"allowMultiple": false
+						} 
+					],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid outage ID supplied"
+					                    }
+				                   ],
+					
+					"summary":"Getting details about a specific outage",
+					"notes": "When called with outage ID in the path, retrives details about only that outage."
+				}
+			]
+		}		
+	],
+	"models":
+		{
+			
+			"Event":
+				{
+					"id":"Event",
+					"properties":
+						{
+							"display": 
+								{
+									"type":"string"
+								},
+					        "log":  
+								{
+									"type":"string"
+								},
+					        "id":  
+								{
+									"type":"integer"
+								},
+					        "severity": 
+						        {
+									"type":"integer"
+								},
+					        "createTime": 
+								{
+									"type":"DateTime"
+								},
+					        "description": 
+								{
+									"type":"string"
+								},
+					        "host": 
+								{
+									"type":"string"
+								},
+					        "logMessage": 
+								{
+									"type":"string"
+								},
+					        "parms": 
+								{
+									"type":"string"
+								},
+					        "source": 
+								{
+									"type":"string"
+								},
+					        "time": 
+								{
+									"type":"DateTime"
+								},
+					        "uei": 
+								{
+									"type":"string"
+								},
+					        "ipAddress": 
+								{
+									"type":"string"
+								}
+						}
+				},
+				"MonitoredService": 
+				{
+					"id":"MonitoredService",
+					"properties":
+						{
+							"id": 
+						        {
+									"type":"integer"
+								},
+							"status": 
+						        {
+									"type":"string"
+								},
+							"ipInterfaceId":  
+						        {
+									"type":"integer"
+								},
+							"serviceType": 
+				        	{
+				        		"$ref":"ServiceType"
+				        	}
+						}
+			     },
+			     "ServiceType" :
+			     {
+						"id":"ServiceType",
+						"properties":
+							{
+								"id": 
+							        {
+										"type":"integer"
+									},
+								"name": 
+							        {
+										"type":"string"
+									}
+							}
+			     },
+				"Outage":
+				{
+					"id":"Outage",
+					"properties":
+						{
+							"id": 
+						        {
+									"type":"integer"
+								},
+					        "ifLostService": 
+								{
+									"type":"DateTime"
+								},
+					        "ifRegainedService": 
+								{
+									"type":"DateTime"
+								},
+					        "ipAddress": 
+								{
+									"type":"string"
+								},
+					        "monitoredService": 
+					        	{
+					        		"$ref":"MonitoredService"
+					        	},
+					        "serviceLostEvent": 
+					        	{
+					        		"$ref":"Event"
+					        	},
+					        "serviceRegainedEvent": 
+					        	{
+					        		"$ref":"Event"
+					        	}
+						}
+				}
+			}
+		}
