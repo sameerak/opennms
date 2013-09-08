@@ -1,0 +1,254 @@
+{
+	"apiVersion":"0.2",
+	"swaggerVersion":"1.1",
+	"basePath":"http://localhost:8980/opennms/rest2",
+	"resourcePath":"/resources",
+	"produces":["application/xml","application/json"],
+	"apis":[
+		{
+			"path":"/alarms",
+			"description":"Fetches all the alarms in the OpenNMS",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAllAlarms",
+					"responseClass":"List[Alarm]",
+					"parameters":[
+						{
+							"paramType": "query",
+							"name": "_s",
+							"description": "FIQL string to search alarm data",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "limit",
+							"description": "number of alarm elements to be returned to as the response",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "offset",
+							"description": "position to start the data retrieval",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "orderBy",
+							"description": "attribute name to be used to order alarm elements",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "order",
+							"description": "\"asc\" to order alarm data in ascending order or \"desc\" for descending order",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}
+					],
+					"responseMessages":[
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid FIQL operator specified"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid Date format used"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"non-numerical data provided for parameters limit and offset"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"data field specified in the query is not available for searching"
+						                    }
+					                   ],
+					"summary":"Getting details about alarms",
+					"notes": "When called without setting any query parameters retreives details about all the alarms in paginated form. User can specify FIQL query string to query alarm data. For dates format \"yyyy-MM-ddTHH:mm:ss\" should be used. For the creation of criteria objects logical AND (\";\") operator was given priority over logical OR (\",\") operator. Pagination is enabled on search results, so following instructions in \"http://www.opennms.org/wiki/New_REST_API/User_Documentation#Using_pagination_on_requests\" you can manipulate paginated results."
+				}
+			]
+		},
+		{
+			"path":"/alarms/{alarmID}",
+			"description":"Fetches a specific alarm in the OpenNMS server",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAspecificAlarm",
+					"responseClass":"List[Alarm]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "alarmID",
+							"description": "ID of alarm that needs to be fetched",
+							"dataType": "integer",
+							"required": true,
+							"allowMultiple": false
+						} 
+					],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid alarm ID supplied"
+					                    }
+				                   ],
+					
+					"summary":"Getting details about a specific alarm",
+					"notes": "When called with alarm ID in the path, retrives details about only that alarm."
+				}
+			]
+		}		
+	],
+	"models":
+		{
+			
+			"Event":
+				{
+					"id":"Event",
+					"properties":
+						{
+							"display": 
+								{
+									"type":"string"
+								},
+					        "log":  
+								{
+									"type":"string"
+								},
+					        "id":  
+								{
+									"type":"integer"
+								},
+					        "severity": 
+						        {
+									"type":"integer"
+								},
+					        "createTime": 
+								{
+									"type":"DateTime"
+								},
+					        "description": 
+								{
+									"type":"string"
+								},
+					        "host": 
+								{
+									"type":"string"
+								},
+					        "logMessage": 
+								{
+									"type":"string"
+								},
+					        "parms": 
+								{
+									"type":"string"
+								},
+					        "source": 
+								{
+									"type":"string"
+								},
+					        "time": 
+								{
+									"type":"DateTime"
+								},
+					        "uei": 
+								{
+									"type":"string"
+								},
+					        "ipAddress": 
+								{
+									"type":"string"
+								}
+						}
+				},
+				"Alarm":
+				{
+					"id":"Alarm",
+					"properties":
+						{
+							"type": 
+						        {
+									"type":"integer"
+								},
+					        "count": 
+						        {
+									"type":"integer"
+								},
+					        "id": 
+						        {
+									"type":"integer"
+								},
+					        "severity": 
+						        {
+									"type":"integer"
+								},
+					        "description": 
+								{
+									"type":"string"
+								},
+					        "parms": 
+								{
+									"type":"string"
+								},
+					        "firstEventTime": 
+								{
+									"type":"DateTime"
+								},
+					        "ipAddress": 
+								{
+									"type":"string"
+								},
+					        "lastEvent": 
+					        	{
+					        		"$ref":"Event"
+					        	},
+					        "lastEventTime": 
+								{
+									"type":"DateTime"
+								},
+					        "logMessage": 
+								{
+									"type":"string"
+								},
+					        "nodeId": 
+						        {
+									"type":"integer"
+								},
+					        "nodeLabel": 
+								{
+									"type":"string"
+								},
+					        "reductionKey": 
+								{
+									"type":"string"
+								},
+					        "suppressedTime": 
+								{
+									"type":"DateTime"
+								},
+					        "suppressedUntil": 
+								{
+									"type":"DateTime"
+								},
+					        "uei": 
+								{
+									"type":"string"
+								},
+					        "x733ProbableCause": 
+						        {
+									"type":"integer"
+								}
+						}
+				}
+			}
+		}
