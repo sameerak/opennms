@@ -3,7 +3,7 @@
 	"swaggerVersion":"1.1",
 	"basePath":"http://localhost:8980/opennms/rest2",
 	"resourcePath":"/resources",
-	"produces":["application/json","application/xml"],
+	"produces":["application/xml","application/json"],
 	"apis":[
 		{
 			"path":"/events",
@@ -25,7 +25,7 @@
 						{
 							"paramType": "query",
 							"name": "limit",
-							"description": "number of node elements to be returned to as the response",
+							"description": "number of event elements to be returned to as the response",
 							"dataType": "integer",
 							"required": false,
 							"allowMultiple": false
@@ -58,11 +58,19 @@
 					"responseMessages":[
 						                    {
 						                    	"code":400,
-						                    	"message":"Invalid username supplied"
+						                    	"message":"Invalid FIQL operator specified"
 						                    },
 						                    {
-						                    	"code":404,
-						                    	"message":"User not found"
+						                    	"code":400,
+						                    	"message":"Invalid Date format used"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"non-numerical data provided for parameters limit and offset"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"data field specified in the query is not available for searching"
 						                    }
 					                   ],
 					"summary":"Getting details about events",
@@ -88,6 +96,12 @@
 							"allowMultiple": false
 						} 
 					],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid event ID supplied"
+					                    }
+				                   ],
 					
 					"summary":"Getting details about a specific event",
 					"notes": "When called with event ID in the path, retrives details about only that event."
@@ -98,74 +112,64 @@
 	"models":
 		{
 			
-			"AssetRecord":
-				{
-					"id":"AssetRecord",
-					"properties": {
-      "building":
-								{
-									"type":"string"
-								},
-      "category":
-								{
-									"type":"string"
-								},
-      "lastModifiedBy":
-								{
-									"type":"string"
-								},
-      "lastModifiedDate":
-								{
-									"type":"DateTime"
-								},
-      "node":
-								{
-									"type":"integer"
-								}
-							}
-				},
-"Event":
+			"Event":
 				{
 					"id":"Event",
 					"properties":
 						{
-							"foreignId":
-								{
-									"type":"long"
-								},
-    "foreignSource": 
+							"display": 
 								{
 									"type":"string"
 								},
-    "label":
+					        "log":  
 								{
 									"type":"string"
 								},
-    "id":
+					        "id":  
 								{
 									"type":"integer"
 								},
-    "type": 
-								{
-									"type":"string"
+					        "severity": 
+						        {
+									"type":"integer"
 								},
-    "assetRecord":
-								{
-    	"$ref":"AssetRecord"
-								},
-    "createTime": 
+					        "createTime": 
 								{
 									"type":"DateTime"
 								},
-    "labelSource": 
+					        "description": 
 								{
 									"type":"string"
 								},
-    "lastCapsdPoll":
+					        "host": 
+								{
+									"type":"string"
+								},
+					        "logMessage": 
+								{
+									"type":"string"
+								},
+					        "parms": 
+								{
+									"type":"string"
+								},
+					        "source": 
+								{
+									"type":"string"
+								},
+					        "time": 
 								{
 									"type":"DateTime"
+								},
+					        "uei": 
+								{
+									"type":"string"
+								},
+					        "ipAddress": 
+								{
+									"type":"string"
 								}
 						}
 				}
-    }
+			}
 		}
