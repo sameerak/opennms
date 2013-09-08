@@ -1,0 +1,217 @@
+{
+	"apiVersion":"0.2",
+	"swaggerVersion":"1.1",
+	"basePath":"http://localhost:8980/opennms/rest2",
+	"resourcePath":"/resources",
+	"produces":["application/xml","application/json"],
+	"apis":[
+		{
+			"path":"/notifications",
+			"description":"Fetches all the notifications in the OpenNMS",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAllNotifications",
+					"responseClass":"List[Notification]",
+					"parameters":[
+						{
+							"paramType": "query",
+							"name": "_s",
+							"description": "FIQL string to search notification data",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "limit",
+							"description": "number of notification elements to be returned to as the response",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "offset",
+							"description": "position to start the data retrieval",
+							"dataType": "integer",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "orderBy",
+							"description": "attribute name to be used to order notification elements",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}, 
+						{
+							"paramType": "query",
+							"name": "order",
+							"description": "\"asc\" to order notification data in ascending order or \"desc\" for descending order",
+							"dataType": "String",
+							"required": false,
+							"allowMultiple": false
+						}
+					],
+					"responseMessages":[
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid FIQL operator specified"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"Invalid Date format used"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"non-numerical data provided for parameters limit and offset"
+						                    },
+						                    {
+						                    	"code":400,
+						                    	"message":"data field specified in the query is not available for searching"
+						                    }
+					                   ],
+					"summary":"Getting details about notifications",
+					"notes": "When called without setting any query parameters retreives details about all the notifications in paginated form. User can specify FIQL query string to query notification data. For dates format \"yyyy-MM-ddTHH:mm:ss\" should be used. For the creation of criteria objects logical AND (\";\") operator was given priority over logical OR (\",\") operator. Pagination is enabled on search results, so following instructions in \"http://www.opennms.org/wiki/New_REST_API/User_Documentation#Using_pagination_on_requests\" you can manipulate paginated results."
+				}
+			]
+		},
+		{
+			"path":"/notifications/{notificationID}",
+			"description":"Fetches a specific notification in the OpenNMS server",
+			"operations":[
+				{
+					"httpMethod":"GET",
+					"nickname":"getAspecificNotification",
+					"responseClass":"List[Notification]",
+					"parameters":[
+						{
+							"paramType": "path",
+							"name": "notificationID",
+							"description": "ID of notification that needs to be fetched",
+							"dataType": "integer",
+							"required": true,
+							"allowMultiple": false
+						} 
+					],
+					"responseMessages":[
+					                    {
+					                    	"code":400,
+					                    	"message":"Invalid notification ID supplied"
+					                    }
+				                   ],
+					
+					"summary":"Getting details about a specific notification",
+					"notes": "When called with notification ID in the path, retrives details about only that notification."
+				}
+			]
+		}		
+	],
+	"models":
+		{
+			"Notification":
+				{
+					"id":"Notification",
+					"properties":
+						{
+					        "id":  
+								{
+									"type":"integer"
+								},
+					        "severity": 
+						        {
+									"type":"integer"
+								},
+							"answeredBy": 
+								{
+									"type":"string"
+								},
+					        "uei": 
+								{
+									"type":"string"
+								},
+					        "ipAddress": 
+								{
+									"type":"string"
+								},
+					        "nodeId": 
+						        {
+									"type":"integer"
+								},
+					        "nodeLabel": 
+								{
+									"type":"string"
+								},
+					        "notificationName":  
+								{
+									"type":"string"
+								},
+					        "numericMessage": 
+								{
+									"type":"integer"
+								},
+					        "pageTime": 
+								{
+									"type":"DateTime"
+								},
+					        "queueId": 
+								{
+									"type":"string"
+								},
+					        "respondTime": 
+								{
+									"type":"DateTime"
+								},
+					        "subject": 
+								{
+									"type":"string"
+								},
+					        "textMessage": 
+								{
+									"type":"string"
+								},
+					        "destinations": 
+								{
+					        		"type":"array",
+					        		"items":
+					        		{
+					        			"$ref":"Destination"
+					        		}
+								}
+						}
+				},
+				"Destination":
+				{
+					"id":"Destination",
+					"properties":
+						{
+					        "id":  
+								{
+									"type":"integer"
+								},
+							"autoNotify": 
+								{
+									"type":"string"
+								},
+					        "contactInfo": 
+						        {
+									"type":"string"
+								},
+					        "media": 
+						        {
+									"type":"string"
+								},
+					        "notifyTime": 
+								{
+									"type":"DateTime"
+								},
+					        "userId": 
+						        {
+									"type":"string"
+								}
+						}
+				}
+			}
+		}
