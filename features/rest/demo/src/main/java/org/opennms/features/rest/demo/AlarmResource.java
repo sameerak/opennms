@@ -33,16 +33,37 @@ public class AlarmResource {
     private AlarmDao alarmDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
+    /**
+     * get all alarms in the system
+     * 
+     * @return List<OnmsAlarm>
+     */
     public List<OnmsAlarm> getAlarms() {
         return alarmDao.findAll();
     }
 
+    /**
+     * get a single alarm identified by path parameter alarmID
+     * 
+     * @param alarmId
+     * @return OnmsAlarm
+     */
     @GET
     @Path("{alarmId}")
     public OnmsAlarm getAlarmById(@PathParam("alarmId") final Integer alarmId) {
         return alarmDao.get(alarmId);
     }
 
+    /**
+     * search alarm data by FIQL and get paginated result
+     * 
+     * @param queryString
+     * @param limit
+     * @param offset
+     * @param orderBy
+     * @param order
+     * @return
+     */
     @GET
     public Response searchAlarms(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
