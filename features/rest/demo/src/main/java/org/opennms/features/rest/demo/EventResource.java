@@ -36,16 +36,37 @@ public class EventResource {
     private EventDao eventDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
+    /**
+     * get all events in the system
+     * 
+     * @return
+     */
     public List<OnmsEvent> getEvents() {
         return eventDao.findAll();
     }
 
+    /**
+     * get the event identified by the path parameter eventId
+     * 
+     * @param eventId
+     * @return
+     */
     @GET
     @Path("{eventId}")
     public OnmsEvent getEventById(@PathParam("eventId") final Integer eventId) {
         return eventDao.get(eventId);
     }
 
+    /**
+     * search events using FIQL and access paginated results
+     * 
+     * @param queryString
+     * @param limit
+     * @param offset
+     * @param orderBy
+     * @param order
+     * @return
+     */
     @GET
     public Response searchEvents(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
