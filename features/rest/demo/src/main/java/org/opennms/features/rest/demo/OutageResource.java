@@ -33,10 +33,21 @@ public class OutageResource {
     private OutageDao outageDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
+    /**
+     * get all outages in the system
+     * 
+     * @return
+     */
     public List<OnmsOutage> getOutages() {
         return outageDao.findAll();
     }
 
+    /**
+     * get the outage identified by the path parameter outage Id
+     * 
+     * @param outageId
+     * @return
+     */
     @GET
     @Path("{outageId}")
     public OnmsOutage getOutageById(@PathParam("outageId") final Integer outageId) {
@@ -51,6 +62,16 @@ public class OutageResource {
         this.outageDao = outageDao;
     }
     
+    /**
+     * search outage data using FIQL and get paginated results
+     * 
+     * @param queryString
+     * @param limit
+     * @param offset
+     * @param orderBy
+     * @param order
+     * @return
+     */
     @GET
     public Response searchOutages(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
