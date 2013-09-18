@@ -33,10 +33,21 @@ public class NotificationResource {
     private NotificationDao notificationDao;
     private static Logger logger = LoggerFactory.getLogger(NodeResource.class);    
 
+    /**
+     * get all notifications in the system
+     * 
+     * @return
+     */
     public List<OnmsNotification> getNotifications() {
         return notificationDao.findAll();
     }
 
+    /**
+     * get the notification identified by the path parameter notification ID
+     * 
+     * @param notificationId
+     * @return
+     */
     @GET
     @Path("{notificationId}")
     public OnmsNotification getNotificationById(@PathParam("notificationId") final Integer notificationId) {
@@ -51,6 +62,16 @@ public class NotificationResource {
         this.notificationDao = outageDao;
     }
     
+    /**
+     * search notification data using FIQL and access paginated results
+     * 
+     * @param queryString
+     * @param limit
+     * @param offset
+     * @param orderBy
+     * @param order
+     * @return
+     */
     @GET
     public Response searchNotifications(@QueryParam("_s") String queryString, @QueryParam("limit") String limit, 
             @QueryParam("offset") String offset, @QueryParam("orderBy") String orderBy, @QueryParam("order") String order) {
