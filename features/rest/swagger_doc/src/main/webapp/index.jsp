@@ -74,6 +74,22 @@
   &nbsp;
 </div>
 
+<div id="new-REST-API-Intro" class="swagger-ui-wrap">
+<div class="info_title">new REST API of OpenNMS</div>
+<div class="info_description">
+Followings are the URL patterns exposed in the new REST API of OpenNMS project. API is created using Apache CXF and runs on Apache karaf as an OSGi bundle.
+New REST API supports <a href="http://www.opennms.org/wiki/New_REST_API/Development_Documentation#Implementation_details_of_the_search_functionality">FIQL</a> queries for searching exposed resources and pagination of search results.
+<ul>
+<li>
+To get detail on how to get and use the REST API please refer to <a href="http://www.opennms.org/wiki/New_REST_API/User_Documentation">user documentation</a>.
+</li>
+<li>
+To get detail about development process and to understand what can be configured in code level please refer to <a href="http://www.opennms.org/wiki/New_REST_API/Development_Documentation">development documentation</a>.
+</li>
+</ul>
+</div>
+</div>
+
 <div id="swagger-ui-container" class="swagger-ui-wrap">
 
 </div>
